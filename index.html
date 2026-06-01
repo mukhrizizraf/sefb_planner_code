@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overview · SEFB Degree Planner</title>
+<meta name="description" content="SEFB UUM Degree Planner — academic standing, CGPA index and degree progress.">
+<link rel="stylesheet" href="css/watchhouse.css">
+</head>
+<body data-page="overview" class="light-mode">
+
+<!-- TOP APP BAR -->
+<header class="topbar">
+  <div class="brand">
+    <button class="icon-btn" id="menuBtn" aria-label="Open menu"><span data-icon="menu"></span></button>
+    <a class="brand-lockup" href="index.html"><img class="brand-logo" src="images/sefb.png" alt="SEFB logo"><span class="brand-mark">SEFB <em>Degree&nbsp;Planner</em></span></a>
+    
+  </div>
+  <nav class="topnav">
+    <a data-nav="overview" href="index.html">Overview</a>
+    <a data-nav="planner" href="planner.html">Planner</a>
+    <a data-nav="analytics" href="analytics.html">Analytics</a>
+    <a data-nav="audit" href="audit.html">Checklist</a>
+    <a data-nav="settings" href="settings.html">Settings</a>
+  </nav>
+  <div class="topbar-actions">
+    <button class="icon-btn" data-theme-toggle><span data-theme-ic></span></button>
+    <a class="icon-btn" href="settings.html" aria-label="Profile"><span data-icon="person"></span></a>
+  </div>
+</header>
+
+<!-- MOBILE DRAWER -->
+<nav class="drawer" id="mobileDrawer">
+  <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
+  <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>Analytics</a>
+  <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
+  <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
+</nav>
+
+<main>
+
+  <!-- FULL-BLEED HERO -->
+  <section class="full-hero">
+    <img class="full-hero-img" src="images/campus.png" alt="SEFB UUM — School of Economics, Finance and Banking">
+    <div class="full-hero-content">
+      <p class="eyebrow">SEFB · Universiti Utara Malaysia</p>
+      <h1>Your degree, curated like a craft.</h1>
+      <p class="sub">Plan every semester of your SEFB degree — prerequisites, credits and CGPA, all in one place.</p>
+      <div class="hero-actions">
+        <a class="btn-light" style="background:#fff;color:var(--charcoal);border-color:#fff" href="planner.html">Open Planner</a>
+        <a class="btn-light" href="audit.html">Graduation Checklist</a>
+      </div>
+    </div>
+  </section>
+
+<div class="wrap">
+
+  <!-- STANDING -->
+  <section class="section grid cols-12">
+    <div class="span-5 panel ring-wrap">
+      <canvas id="cgpaRingCanvas" width="440" height="440" aria-label="CGPA index ring"></canvas>
+      <div id="cgpaRingClass">—</div>
+      <div id="cgpaRingMotiv"></div>
+    </div>
+    <div class="span-7 panel">
+      <p class="eyebrow">Current Standing</p>
+      <h2 class="standing" style="text-align:left;margin:0"><span id="standingClass">Awaiting Grades</span></h2>
+      <p id="standingDesc">Add grades to your planned courses to see your standing and trajectory.</p>
+      <p class="prog-line">Your programme · <b data-program-name>—</b> · <a href="settings.html">change</a></p>
+      <div class="stat-row" style="margin-top:26px">
+        <div class="stat-card"><div class="v" id="statCredits">0</div><div class="l">Credits Planned</div></div>
+        <div class="stat-card"><div class="v" id="statGraded">0</div><div class="l">Graded Courses</div></div>
+        <div class="stat-card"><div class="v" id="statGradedCr">0</div><div class="l">Graded Credits</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDITORIAL SPLIT -->
+  <section class="section">
+    <div class="split-media">
+      <div class="split-img"><img src="images/hero-banner.jpg" alt="A considered study space"></div>
+      <div class="split-copy">
+        <p class="eyebrow">Made for SEFB Students</p>
+        <p class="quote">Graduate <em>on time</em>, with the CGPA you're aiming for.</p>
+        <p>From your MUET English pathway to final-year industrial training, every prerequisite and credit rule in the SEFB handbook is built in — so you plan each semester with confidence, not guesswork.</p>
+        <div style="margin-top:22px"><a class="linkbtn" href="planner.html">Start planning your semesters</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACHIEVEMENT PORTFOLIO -->
+  <section class="section">
+    <div class="section-head">
+      <div><p class="eyebrow">Milestones</p><h2>Achievement Portfolio</h2></div>
+      <a class="linkbtn" href="audit.html">View all</a>
+    </div>
+    <div class="badge-grid" id="badges"></div>
+  </section>
+
+  <!-- GRADUATION + DEGREE PROGRESS -->
+  <section class="section grid cols-12">
+    <div class="span-5 dark-card has-img">
+      <img src="images/house-midtown.jpg" alt="">
+      <div class="dc-body">
+        <p class="eyebrow">Milestone</p>
+        <h3 style="font-size:30px;margin-top:10px;color:var(--on-dark)">Estimated Graduation</h3>
+        <div class="audit-completion" id="milestoneValue" style="font-size:clamp(34px,5vw,52px)">—</div>
+        <p class="audit-completion-l" id="milestoneSub"></p>
+      </div>
+    </div>
+    <div class="span-7 panel">
+      <p class="eyebrow card-eyebrow">Degree Progress</p>
+      <div class="overall-head">
+        <span id="overallCredits">0 / 0 CREDITS</span>
+        <span id="overallPct">0% COMPLETE</span>
+      </div>
+      <div class="overall-track"><div id="overallBar"></div></div>
+      <div id="degreeProgress" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer"><div class="wrap">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a class="brand-lockup" href="index.html"><img class="brand-logo" src="images/sefb.png" alt="SEFB logo"><span class="brand-mark">SEFB <em>Degree&nbsp;Planner</em></span></a>
+      <p>A considered degree-planning studio for the UUM School of Economics, Finance &amp; Banking.</p>
+    </div>
+    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">Analytics</a></div>
+    <div class="footer-col"><h4>Academic</h4><a href="audit.html">Graduation Checklist</a><a href="settings.html">Programme Setup</a><a href="settings.html#help">Help &amp; Support</a></div>
+    <div class="footer-col"><h4>About</h4><a href="settings.html#about">The Project</a><a href="settings.html#help">Help &amp; Support</a></div>
+  </div>
+  <div class="footer-base">
+    <span>© Universiti Utara Malaysia · SEFB · 2026</span>
+    <span>Self-contained · Offline-ready</span>
+  </div>
+</div></footer>
+
+<!-- MODAL + CONFIRM -->
+<div class="modal-bg" id="modal"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
+<div class="modal-bg" id="confirmDialog"><div class="modal-card confirm-card">
+  <p id="confirmMsg"></p>
+  <div class="confirm-actions"><button class="btn-ghost" onclick="confirmResolve(false)">Cancel</button><button class="btn-solid" onclick="confirmResolve(true)">Confirm</button></div>
+</div></div>
+
+<div class="edge l"></div><div class="edge r"></div>
+
+<script src="js/data.js"></script>
+<script src="js/core-engine.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  loadState();
+  initChrome();
+  renderAll();
+</script>
+</body>
+</html>
