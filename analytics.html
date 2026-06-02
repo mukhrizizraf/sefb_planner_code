@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analytics · SEFB Degree Planner</title>
+<title>GPA &amp; CGPA Analytics · SEFB Degree Planner</title>
 <link rel="stylesheet" href="css/watchhouse.css">
 </head>
 <body data-page="analytics" class="light-mode">
+<a href="#main" class="skip-link">Skip to main content</a>
 
 <header class="topbar">
   <div class="brand">
@@ -17,11 +18,12 @@
   <nav class="topnav">
     <a data-nav="overview" href="index.html">Overview</a>
     <a data-nav="planner" href="planner.html">Planner</a>
-    <a data-nav="analytics" href="analytics.html">Analytics</a>
+    <a data-nav="analytics" href="analytics.html">GPA &amp; CGPA Analytics</a>
     <a data-nav="audit" href="audit.html">Checklist</a>
     <a data-nav="settings" href="settings.html">Settings</a>
   </nav>
   <div class="topbar-actions">
+    <a class="icon-btn" href="help.html" aria-label="Help" title="Help" data-nav="help"><span data-icon="help"></span></a>
     <button class="icon-btn" data-theme-toggle><span data-theme-ic></span></button>
     <a class="icon-btn" href="settings.html" aria-label="Profile"><span data-icon="person"></span></a>
   </div>
@@ -30,18 +32,18 @@
 <nav class="drawer" id="mobileDrawer">
   <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
   <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
-  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>Analytics</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>GPA &amp; CGPA</a>
   <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
   <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
 </nav>
 
-<main>
+<main id="main">
 <div class="wrap">
 
   <section class="page-hero">
     <div class="lead">
       <p class="eyebrow">Measured Performance</p>
-      <h1>Analytics.</h1>
+      <h1>GPA &amp; CGPA Analytics.</h1>
       <p>Read your trajectory term by term — and project where the next semester takes your CGPA.</p>
     </div>
   </section>
@@ -88,8 +90,8 @@
       <p class="eyebrow card-eyebrow">What-if · Full Degree</p>
       <h2 class="card-title">CGPA Projection</h2>
       <div class="prior-grid" style="margin-top:18px">
-        <div class="field"><label class="field-label">Current CGPA</label><input class="input" id="cgpaPriorVal" type="number" step="0.01" min="0" max="4" placeholder="e.g. 3.50" oninput="cgpaCalcRender()"></div>
-        <div class="field"><label class="field-label">Credits earned</label><input class="input" id="cgpaPriorCr" type="number" min="0" placeholder="e.g. 60" oninput="cgpaCalcRender()"></div>
+        <div class="field"><label class="field-label" for="cgpaPriorVal">Current CGPA</label><input class="input" id="cgpaPriorVal" type="number" step="0.01" min="0" max="4" placeholder="e.g. 3.50" oninput="cgpaCalcRender()"></div>
+        <div class="field"><label class="field-label" for="cgpaPriorCr">Credits earned</label><input class="input" id="cgpaPriorCr" type="number" min="0" placeholder="e.g. 60" oninput="cgpaCalcRender()"></div>
       </div>
       <div id="cgpaCalcRows"></div>
       <div style="display:flex;gap:10px;margin-top:6px">
@@ -110,7 +112,7 @@
 <footer class="site-footer"><div class="wrap">
   <div class="footer-grid">
     <div class="footer-brand"><a class="brand-lockup" href="index.html"><img class="brand-logo" src="images/sefb.png" alt="SEFB logo"><span class="brand-mark">SEFB <em>Degree&nbsp;Planner</em></span></a><p>A considered degree-planning studio for the UUM School of Economics, Finance &amp; Banking.</p></div>
-    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">Analytics</a></div>
+    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">GPA &amp; CGPA Analytics</a></div>
     <div class="footer-col"><h4>Academic</h4><a href="audit.html">Graduation Checklist</a><a href="settings.html">Programme Setup</a><a href="settings.html#help">Help &amp; Support</a></div>
     <div class="footer-col"><h4>About</h4><a href="settings.html#about">The Project</a><a href="settings.html#help">Help &amp; Support</a></div>
   </div>
@@ -120,13 +122,13 @@
 <nav class="bottomnav">
   <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
   <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
-  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>Analytics</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>GPA &amp; CGPA</a>
   <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
   <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
 </nav>
 
-<div class="modal-bg" id="modal"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
-<div class="modal-bg" id="confirmDialog"><div class="modal-card confirm-card">
+<div class="modal-bg" id="modal" role="dialog" aria-modal="true"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
+<div class="modal-bg" id="confirmDialog" role="dialog" aria-modal="true"><div class="modal-card confirm-card">
   <p id="confirmMsg"></p>
   <div class="confirm-actions"><button class="btn-ghost" onclick="confirmResolve(false)">Cancel</button><button class="btn-solid" onclick="confirmResolve(true)">Confirm</button></div>
 </div></div>

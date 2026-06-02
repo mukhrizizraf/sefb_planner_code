@@ -9,12 +9,12 @@ function gpaCalcRender(){
   const wrap=$("gpaCalcRows"); if(!wrap) return;
   wrap.innerHTML=gpaCalc.map((row,i)=>`
     <div class="calc-row">
-      <div class="calc-cr"><input type="number" min="1" max="8" value="${row.cr}" oninput="gpaCalcSet(${i},'cr',this.value)"><span>cr</span></div>
-      <select onchange="gpaCalcSet(${i},'grade',this.value)">
+      <div class="calc-cr"><input type="number" min="1" max="8" value="${row.cr}" oninput="gpaCalcSet(${i},'cr',this.value)" aria-label="Credits for course ${i+1}"><span>cr</span></div>
+      <select onchange="gpaCalcSet(${i},'grade',this.value)" aria-label="Grade for course ${i+1}">
         <option value="">— grade —</option>
         ${GRADES.map(g=>`<option value="${g.g}" ${row.grade===g.g?'selected':''}>${g.g} · ${g.p.toFixed(2)} · ${g.s}</option>`).join("")}
       </select>
-      <button class="row-x" onclick="gpaCalcRemove(${i})" title="Remove">${icon("close")}</button>
+      <button class="row-x" onclick="gpaCalcRemove(${i})" title="Remove" aria-label="Remove course ${i+1}">${icon("close")}</button>
     </div>`).join("");
   let totCr=0,totP=0,count=0;
   gpaCalc.forEach(r=>{ const p=gp(r.grade), cr=Number(r.cr)||0; if(p===null||!cr) return; totCr+=cr; totP+=p*cr; count++; });
@@ -43,12 +43,12 @@ function cgpaCalcRender(){
   const wrap=$("cgpaCalcRows"); if(!wrap) return;
   wrap.innerHTML=cgpaCalcRows.map((row,i)=>`
     <div class="calc-row">
-      <div class="calc-cr"><input type="number" min="1" max="8" value="${row.cr}" oninput="cgpaCalcSetRow(${i},'cr',this.value)"><span>cr</span></div>
-      <select onchange="cgpaCalcSetRow(${i},'grade',this.value)">
+      <div class="calc-cr"><input type="number" min="1" max="8" value="${row.cr}" oninput="cgpaCalcSetRow(${i},'cr',this.value)" aria-label="Credits for semester ${i+1}"><span>cr</span></div>
+      <select onchange="cgpaCalcSetRow(${i},'grade',this.value)" aria-label="GPA grade for semester ${i+1}">
         <option value="">— grade —</option>
         ${GRADES.map(g=>`<option value="${g.g}" ${row.grade===g.g?'selected':''}>${g.g} · ${g.p.toFixed(2)} · ${g.s}</option>`).join("")}
       </select>
-      <button class="row-x" onclick="cgpaCalcRemoveRow(${i})" title="Remove">${icon("close")}</button>
+      <button class="row-x" onclick="cgpaCalcRemoveRow(${i})" title="Remove" aria-label="Remove semester ${i+1}">${icon("close")}</button>
     </div>`).join("");
   let semCr=0,semP=0;
   cgpaCalcRows.forEach(r=>{ const p=gp(r.grade), cr=Number(r.cr)||0; if(p===null||!cr) return; semCr+=cr; semP+=p*cr; });

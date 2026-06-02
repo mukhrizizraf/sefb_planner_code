@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="css/watchhouse.css">
 </head>
 <body data-page="overview" class="light-mode">
+<a href="#main" class="skip-link">Skip to main content</a>
 
 <!-- TOP APP BAR -->
 <header class="topbar">
@@ -19,11 +20,12 @@
   <nav class="topnav">
     <a data-nav="overview" href="index.html">Overview</a>
     <a data-nav="planner" href="planner.html">Planner</a>
-    <a data-nav="analytics" href="analytics.html">Analytics</a>
+    <a data-nav="analytics" href="analytics.html">GPA &amp; CGPA Analytics</a>
     <a data-nav="audit" href="audit.html">Checklist</a>
     <a data-nav="settings" href="settings.html">Settings</a>
   </nav>
   <div class="topbar-actions">
+    <a class="icon-btn" href="help.html" aria-label="Help" title="Help" data-nav="help"><span data-icon="help"></span></a>
     <button class="icon-btn" data-theme-toggle><span data-theme-ic></span></button>
     <a class="icon-btn" href="settings.html" aria-label="Profile"><span data-icon="person"></span></a>
   </div>
@@ -33,16 +35,20 @@
 <nav class="drawer" id="mobileDrawer">
   <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
   <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
-  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>Analytics</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>GPA &amp; CGPA</a>
   <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
   <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
 </nav>
 
-<main>
+<main id="main">
 
   <!-- FULL-BLEED HERO -->
-  <section class="full-hero">
-    <img class="full-hero-img" src="images/campus.png" alt="SEFB UUM — School of Economics, Finance and Banking">
+  <section class="full-hero" style="--hero-rot:0deg">
+    <picture>
+      <source media="(max-width:768px)" srcset="images/hero-banner-sm.webp" type="image/webp">
+      <source srcset="images/hero-banner.webp" type="image/webp">
+      <img class="full-hero-img" src="images/hero-banner-opt.jpg" alt="A warm, considered interior — your SEFB study space" fetchpriority="high">
+    </picture>
     <div class="full-hero-content">
       <p class="eyebrow">SEFB · Universiti Utara Malaysia</p>
       <h1>Your degree, curated like a craft.</h1>
@@ -79,7 +85,10 @@
   <!-- EDITORIAL SPLIT -->
   <section class="section">
     <div class="split-media">
-      <div class="split-img"><img src="images/hero-banner.jpg" alt="A considered study space"></div>
+      <div class="split-img"><picture>
+        <source srcset="images/focus-studio.webp" type="image/webp">
+        <img src="images/focus-studio-opt.jpg" alt="A considered study space" loading="lazy">
+      </picture></div>
       <div class="split-copy">
         <p class="eyebrow">Made for SEFB Students</p>
         <p class="quote">Graduate <em>on time</em>, with the CGPA you're aiming for.</p>
@@ -101,7 +110,10 @@
   <!-- GRADUATION + DEGREE PROGRESS -->
   <section class="section grid cols-12">
     <div class="span-5 dark-card has-img">
-      <img src="images/house-midtown.jpg" alt="">
+      <picture>
+        <source srcset="images/house-midtown.webp" type="image/webp">
+        <img src="images/house-midtown.jpg" alt="" loading="lazy">
+      </picture>
       <div class="dc-body">
         <p class="eyebrow">Milestone</p>
         <h3 style="font-size:30px;margin-top:10px;color:var(--on-dark)">Estimated Graduation</h3>
@@ -130,7 +142,7 @@
       <a class="brand-lockup" href="index.html"><img class="brand-logo" src="images/sefb.png" alt="SEFB logo"><span class="brand-mark">SEFB <em>Degree&nbsp;Planner</em></span></a>
       <p>A considered degree-planning studio for the UUM School of Economics, Finance &amp; Banking.</p>
     </div>
-    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">Analytics</a></div>
+    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">GPA &amp; CGPA Analytics</a></div>
     <div class="footer-col"><h4>Academic</h4><a href="audit.html">Graduation Checklist</a><a href="settings.html">Programme Setup</a><a href="settings.html#help">Help &amp; Support</a></div>
     <div class="footer-col"><h4>About</h4><a href="settings.html#about">The Project</a><a href="settings.html#help">Help &amp; Support</a></div>
   </div>
@@ -141,8 +153,8 @@
 </div></footer>
 
 <!-- MODAL + CONFIRM -->
-<div class="modal-bg" id="modal"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
-<div class="modal-bg" id="confirmDialog"><div class="modal-card confirm-card">
+<div class="modal-bg" id="modal" role="dialog" aria-modal="true"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
+<div class="modal-bg" id="confirmDialog" role="dialog" aria-modal="true"><div class="modal-card confirm-card">
   <p id="confirmMsg"></p>
   <div class="confirm-actions"><button class="btn-ghost" onclick="confirmResolve(false)">Cancel</button><button class="btn-solid" onclick="confirmResolve(true)">Confirm</button></div>
 </div></div>

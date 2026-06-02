@@ -8,6 +8,16 @@
 const CAT_LABEL = {A:"University Core",B:"English Core",C:"Program Core",D:"Specialization",
   E:"Programme Elective",F:"Free Elective",G:"Industrial Training",H:"Industrial Training"};
 
+/* Category colour legend — only shows the categories this programme actually uses. */
+function renderCatLegend(){
+  const host=$("catLegend"); if(!host) return;
+  const p=PROGRAMS[state.programId]; if(!p){ host.innerHTML=""; return; }
+  const cats=[...new Set(p.courses.map(c=>c.cat))].sort();
+  host.innerHTML=cats.map(cat=>
+    `<span class="cat-legend-item" style="--c:var(--cat-${cat})"><span class="cat-swatch"></span><b>${cat}</b> ${CAT_LABEL[cat]||cat}</span>`
+  ).join("");
+}
+
 function renderSemesters(){
   const host=$("semesters"); if(!host) return;
   const p=PROGRAMS[state.programId];
@@ -43,7 +53,7 @@ function renderSemesters(){
           <h3 class="sem-title">${isExtra?"Extension "+s:"Semester "+s}${s===currentSem?' <span class="sem-now">Current</span>':""}</h3>
         </div>
         <div class="sem-head-right">
-          <select class="sem-session" title="Academic session" onchange="setSemSession(${s},this.value)">
+          <select class="sem-session" title="Academic session" aria-label="Academic session for ${isExtra?'extension '+s:'semester '+s}" onchange="setSemSession(${s},this.value)">
             <option value="">Session…</option>${sessOpts}
           </select>
           <div class="sem-gpa">
@@ -57,6 +67,7 @@ function renderSemesters(){
         <select id="addSel-${s}" aria-label="Add course to semester ${s}"><option value="">+ Add course to this semester…</option></select>
         <button class="btn-outline sm" onclick="addCourse(${s})">${icon("add")} Add</button>
       </div>
+      ${items.length?`<button class="btn-deans" style="width:100%;margin-top:12px" onclick="simulateDeansList(${s})">🎉 Simulate a Dean's List semester for me!</button>`:""}
       <div class="sem-foot">
         <div class="sem-foot-row">
           <span class="sem-foot-lbl">TOTAL CREDITS</span>
@@ -83,15 +94,15 @@ function renderSemesters(){
         <span class="course-code">${cc.code}</span>
         <div class="course-body">
           <div class="course-name">${cc.en}${pr.ok?"":' <span class="lock-pill">Locked</span>'}${failed?' <span class="lock-pill warn">Retake</span>':""}</div>
-          <div class="course-meta">${cc.ms} · ${CAT_LABEL[cc.cat]||cc.cat}</div>
+          <div class="course-meta">${cc.ms} · <span class="cat-name" style="--c:var(--cat-${cc.cat})"><span class="cat-dot"></span>${cc.cat}. ${CAT_LABEL[cc.cat]||cc.cat}</span></div>
         </div>
         <div class="course-tail">
           <span class="course-cr">${cc.cr} cr</span>
-          <select class="grade-sel" onchange="setGrade(${s},${idx},this.value)" onclick="event.stopPropagation()" title="Grade">
+          <select class="grade-sel" onchange="setGrade(${s},${idx},this.value)" onclick="event.stopPropagation()" title="Grade" aria-label="Grade for ${cc.code} ${cc.en}">
             <option value="">—</option>
             ${GRADES.map(g=>`<option value="${g.g}" ${it.grade===g.g?'selected':''}>${g.g}</option>`).join("")}
           </select>
-          <button class="row-x" onclick="event.stopPropagation();removeCourse(${s},${idx})" title="Remove">${icon("close")}</button>
+          <button class="row-x" onclick="event.stopPropagation();removeCourse(${s},${idx})" title="Remove" aria-label="Remove ${cc.code} ${cc.en}">${icon("close")}</button>
         </div>`;
       list.appendChild(row);
     });
@@ -193,29 +204,42 @@ function buildAddDropdown(addSel, s){
   });
 }
 
+/* Event delegation: listeners bind ONCE to the persistent #semesters host and
+   survive innerHTML rebuilds, so renderSemesters() no longer re-attaches a
+   handler to every row/card on each render. */
+let _dragDelegated=false;
 function attachDragHandlers(){
-  document.querySelectorAll(".course-row").forEach(el=>{
-    el.addEventListener("dragstart",e=>{
-      el.classList.add("dragging");
-      e.dataTransfer.setData("text/plain",JSON.stringify({sem:el.dataset.sem,idx:el.dataset.idx,code:el.dataset.code}));
-      e.dataTransfer.effectAllowed="move";
-    });
-    el.addEventListener("dragend",()=>el.classList.remove("dragging"));
+  const host=$("semesters"); if(!host || _dragDelegated) return;
+  _dragDelegated=true;
+
+  host.addEventListener("dragstart",e=>{
+    const el=e.target.closest(".course-row"); if(!el) return;
+    el.classList.add("dragging");
+    e.dataTransfer.setData("text/plain",JSON.stringify({sem:el.dataset.sem,idx:el.dataset.idx,code:el.dataset.code}));
+    e.dataTransfer.effectAllowed="move";
   });
-  document.querySelectorAll(".sem-card").forEach(card=>{
-    card.addEventListener("dragover",e=>{ e.preventDefault(); card.classList.add("drop-target"); });
-    card.addEventListener("dragleave",()=>card.classList.remove("drop-target"));
-    card.addEventListener("drop",e=>{
-      e.preventDefault(); card.classList.remove("drop-target");
-      let data; try{ data=JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){ return; }
-      const fromSem=+data.sem, fromIdx=+data.idx, toSem=+card.dataset.sem;
-      if(fromSem===toSem) return;
-      const item=state.plan[fromSem][fromIdx];
-      if(!item) return;
-      state.plan[fromSem].splice(fromIdx,1);
-      state.plan[toSem].push(item);
-      saveState(); renderAll();
-    });
+  host.addEventListener("dragend",e=>{
+    const el=e.target.closest(".course-row"); if(el) el.classList.remove("dragging");
+  });
+  host.addEventListener("dragover",e=>{
+    const card=e.target.closest(".sem-card"); if(!card) return;
+    e.preventDefault(); card.classList.add("drop-target");
+  });
+  host.addEventListener("dragleave",e=>{
+    const card=e.target.closest(".sem-card"); if(!card) return;
+    if(!card.contains(e.relatedTarget)) card.classList.remove("drop-target");
+  });
+  host.addEventListener("drop",e=>{
+    const card=e.target.closest(".sem-card"); if(!card) return;
+    e.preventDefault(); card.classList.remove("drop-target");
+    let data; try{ data=JSON.parse(e.dataTransfer.getData("text/plain")); }catch(_){ return; }
+    const fromSem=+data.sem, fromIdx=+data.idx, toSem=+card.dataset.sem;
+    if(fromSem===toSem) return;
+    const item=state.plan[fromSem][fromIdx];
+    if(!item) return;
+    state.plan[fromSem].splice(fromIdx,1);
+    state.plan[toSem].push(item);
+    saveState(); renderAll();
   });
 }
 

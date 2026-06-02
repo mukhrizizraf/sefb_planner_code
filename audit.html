@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="css/watchhouse.css">
 </head>
 <body data-page="audit" class="light-mode">
+<a href="#main" class="skip-link">Skip to main content</a>
 
 <header class="topbar">
   <div class="brand">
@@ -17,11 +18,12 @@
   <nav class="topnav">
     <a data-nav="overview" href="index.html">Overview</a>
     <a data-nav="planner" href="planner.html">Planner</a>
-    <a data-nav="analytics" href="analytics.html">Analytics</a>
+    <a data-nav="analytics" href="analytics.html">GPA &amp; CGPA Analytics</a>
     <a data-nav="audit" href="audit.html">Checklist</a>
     <a data-nav="settings" href="settings.html">Settings</a>
   </nav>
   <div class="topbar-actions">
+    <a class="icon-btn" href="help.html" aria-label="Help" title="Help" data-nav="help"><span data-icon="help"></span></a>
     <button class="icon-btn" data-theme-toggle><span data-theme-ic></span></button>
     <a class="icon-btn" href="settings.html" aria-label="Profile"><span data-icon="person"></span></a>
   </div>
@@ -30,12 +32,12 @@
 <nav class="drawer" id="mobileDrawer">
   <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
   <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
-  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>Analytics</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>GPA &amp; CGPA</a>
   <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
   <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
 </nav>
 
-<main>
+<main id="main">
 <div class="wrap">
 
   <section class="page-hero">
@@ -67,7 +69,10 @@
   <!-- PROFESSIONAL PRACTICE + ADVISOR -->
   <section class="section grid cols-12">
     <div class="span-7 split-media">
-      <div class="split-img"><img src="images/house-marsa.jpg" alt="Professional placement"></div>
+      <div class="split-img"><picture>
+        <source srcset="images/house-marsa.webp" type="image/webp">
+        <img src="images/house-marsa-opt.jpg" alt="Professional placement" loading="lazy">
+      </picture></div>
       <div class="split-copy">
         <p class="eyebrow">Professional Practice</p>
         <h2 class="card-title" style="margin-top:4px">Industrial Training</h2>
@@ -107,7 +112,7 @@
 <footer class="site-footer"><div class="wrap">
   <div class="footer-grid">
     <div class="footer-brand"><a class="brand-lockup" href="index.html"><img class="brand-logo" src="images/sefb.png" alt="SEFB logo"><span class="brand-mark">SEFB <em>Degree&nbsp;Planner</em></span></a><p>A considered degree-planning studio for the UUM School of Economics, Finance &amp; Banking.</p></div>
-    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">Analytics</a></div>
+    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">GPA &amp; CGPA Analytics</a></div>
     <div class="footer-col"><h4>Academic</h4><a href="audit.html">Graduation Checklist</a><a href="settings.html">Programme Setup</a><a href="settings.html#help">Help &amp; Support</a></div>
     <div class="footer-col"><h4>About</h4><a href="settings.html#about">The Project</a><a href="settings.html#help">Help &amp; Support</a></div>
   </div>
@@ -117,13 +122,13 @@
 <nav class="bottomnav">
   <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
   <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
-  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>Analytics</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>GPA &amp; CGPA</a>
   <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
   <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
 </nav>
 
-<div class="modal-bg" id="modal"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
-<div class="modal-bg" id="confirmDialog"><div class="modal-card confirm-card">
+<div class="modal-bg" id="modal" role="dialog" aria-modal="true"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
+<div class="modal-bg" id="confirmDialog" role="dialog" aria-modal="true"><div class="modal-card confirm-card">
   <p id="confirmMsg"></p>
   <div class="confirm-actions"><button class="btn-ghost" onclick="confirmResolve(false)">Cancel</button><button class="btn-solid" onclick="confirmResolve(true)">Confirm</button></div>
 </div></div>

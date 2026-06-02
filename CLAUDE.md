@@ -1,8 +1,9 @@
-# CLAUDE.md — app/ (WatchHouse Edition)
+# CLAUDE.md — app/ (SEFB Degree Planner — WatchHouse Edition)
+
+Last updated: 2026-06-02
 
 This file provides guidance to Claude Code when working with the **`app/`** folder —
-the redesigned multi-page SEFB UUM Degree Planner in the "Modern Coffee / WatchHouse"
-editorial aesthetic.
+the redesigned multi-page SEFB UUM Degree Planner in the WatchHouse editorial aesthetic.
 
 ---
 
@@ -13,7 +14,11 @@ No framework, no CDN, no server — open `app/index.html` in any browser to star
 Works offline and on GitHub Pages without modification.
 
 **All edits to this redesign go inside `app/`.** The original `SEFB_Dashboard.html`
-in the project root is a separate, untouched legacy file — do not confuse the two.
+in the project root is the canonical curriculum source — do not confuse the two.
+When curriculum data changes, edit `SEFB_Dashboard.html` first, then re-sync `app/js/data.js`.
+
+Live site: `https://mukhrizizraf.github.io/sefb_planner_code/`
+GitHub repo: `mukhrizizraf/sefb_planner_code` (contents of `app/` at repo root)
 
 ---
 
@@ -21,125 +26,212 @@ in the project root is a separate, untouched legacy file — do not confuse the 
 
 ```
 app/
-  index.html          Overview page
-  planner.html        Semester Planner page
-  analytics.html      Analytics (charts + calculators) page
-  audit.html          Degree Audit page
-  settings.html       Settings / Help / About page
-  README.md           Deployment instructions (GitHub Pages)
+  index.html            Overview page (full-bleed campus hero, ring gauge, editorial split)
+  planner.html          Semester Planner (Programme Setup top-left, Actions top-right)
+  analytics.html        Analytics — GPA bar chart, sparkline, calculators
+  audit.html            Graduation Checklist — component audit, badges
+  settings.html         Settings / Help / About
 
   css/
-    watchhouse.css    Single design-system stylesheet — all tokens, components, layout,
-                      light/dark, responsive, print. No external imports.
+    watchhouse.css      Single design-system stylesheet — all tokens, components, imagery,
+                        brand lockup, layout, light/dark, responsive, print. No external imports.
 
   js/
-    data.js           Verbatim GRADES + PROGRAMS objects for all 5 SEFB programmes.
-                      Extracted from the canonical SEFB_Dashboard.html. Do NOT
-                      hand-edit course data here — sync from the root file instead.
-    core-engine.js    State, persistence, prereq engine, GPA/CGPA, theming (light/dark),
-                      shared actions (loadRecommended, resetPlan, extraSems), modals,
-                      toast, renderAll() dispatch. Loaded on every page.
-    charts.js         CGPA ring gauge (canvas), per-semester GPA bar chart (canvas),
-                      CGPA trend sparkline (inline SVG), animateNumber count-up.
-                      HiDPI/DPR-sharp, dark-mode aware. Loaded on pages with charts.
-    ui.js             Inline SVG icon set (ICONS map + icon() helper), page chrome
-                      (initChrome, nav active state, mobile drawer), all select renders
-                      (programme / track / pathway / language), shared renders:
-                      renderHeroStats, renderClassification, renderDegreeProgress,
-                      renderMilestone, renderBadges, renderGpaTable, renderCharts,
-                      renderAudit, renderAlerts (take-note panel), sessionToTerm().
-    planner.js        renderSemesters(), buildAddDropdown() (full grouped optgroup logic
-                      with D-track + F-field sub-sections and lock hints), attachDragHandlers(),
-                      addCourse/removeCourse/setSemSession/setGrade, plannerSearch(),
-                      exportPDF(). Loaded only on planner.html.
-    calculators.js    Standalone GPA calculator + CGPA projection tool. Loaded only on
-                      analytics.html.
+    data.js             Verbatim GRADES + PROGRAMS (lines 1628–2327 of SEFB_Dashboard.html).
+                        Re-extracted with correct UTF-8 — byte-identical to source.
+                        DO NOT hand-edit; sync from the root canonical file.
+    core-engine.js      State, persistence, prereq engine, GPA/CGPA,
+                        passedCredits() + componentTotals() (audit correctness fix),
+                        theming (light/dark), shared actions, modals, toast, renderAll().
+    charts.js           CGPA ring gauge (canvas), per-semester GPA bar chart (canvas),
+                        sparkline (SVG), animateNumber. Arc colour uses _ringAnimTarget
+                        to avoid red flash mid-sweep animation.
+    ui.js               SVG icon set, page chrome (initChrome), select renders,
+                        renderAudit() (eligibility uses passedCredits only),
+                        renderHeroStats, renderClassification, renderDegreeProgress,
+                        renderMilestone, renderBadges, renderGpaTable, renderCharts,
+                        renderAlerts, sessionToTerm().
+    planner.js          renderSemesters(), buildAddDropdown(), drag-drop, course actions,
+                        plannerSearch(), exportPDF().
+    calculators.js      Standalone GPA + CGPA projection. analytics.html only.
 
-  fonts/              Self-hosted OFL-licensed woff2 fonts (no CDN required):
-                        Libre Caslon Text 400 / 400-italic / 700
-                        Hanken Grotesk 300 / 400 / 600 / 700
+  fonts/                Self-hosted OFL woff2 — Libre Caslon Text (400/400i/700) +
+                        Hanken Grotesk (300/400/600/700). No CDN.
 
   images/
-    sefb.png          SEFB UUM logo (used as avatar in top bar)
-    uum-pic1.jpg      Ambient backdrop (kept for future use)
+    sefb.png            SEFB UUM logo — topbar brand lockup (height:38px) + footer
+    campus.png          Real SEFB building photo ("I ❤ SEFB") — Overview full-bleed hero
+                        Rotated -1.6° + scale(1.12) in CSS to level the building sign.
+    hero-banner.jpg     WatchHouse warm interior — editorial split on Overview
+    focus-studio.jpg    Studio interior — image strip on Planner page
+    house-midtown.jpg   Amber interior — Milestone dark card bg on Overview
+    house-marsa.jpg     Outdoor terrace — Industrial Training split on Checklist page
+    uum-pic1.jpg        UUM ambient backdrop (kept for future use)
 ```
 
 ---
 
-## Design system (watchhouse.css)
+## Branding
 
-### Aesthetic
-"WatchHouse" editorial: bone & charcoal, **sharp 0 px corners**, 1 px blueprint borders,
-no drop shadows. Two typefaces: **Libre Caslon Text** (serif display/headlines) and
-**Hanken Grotesk** (sans body). Uppercase tracked labels everywhere.
+- **App name everywhere**: "SEFB Degree Planner" (not "WatchHouse")
+- **Brand lockup**: `<a class="brand-lockup">` → `<img class="brand-logo">` (38px height) + `<span class="brand-mark">SEFB <em>Degree Planner</em></span>`
+- **Nav labels**: Overview · Planner · Analytics · Checklist · Settings (CSS uppercase via tracking)
+- **"Audit" tab** was renamed to **"Checklist"** — the HTML page is still `audit.html`, the `data-nav` attribute is still `"audit"`, only the visible label changed.
 
-### CSS custom properties (tokens)
+---
 
-| Token | Light value | Dark value |
-|---|---|---|
-| `--surface` | `#fef9f3` | `#16140f` |
-| `--bone` | `#f9f4ee` | `#211e18` |
-| `--ink` | `#1d1b18` | `#f5f0ea` |
-| `--sub` | `#4c4546` | `#cfc9c0` |
-| `--warm` | `#696561` | `#a8a299` |
-| `--faint` | `#a59f98` | `#7e7872` |
-| `--line` | `rgba(105,101,97,.16)` | `rgba(245,240,234,.12)` |
-| `--amber` | `#d4a373` | same |
-| `--amber-deep` | `#b07a3f` | same |
-| `--charcoal` | `#1a1a1a` | `#0e0d0a` |
-| `--error` | `#ba1a1a` | same |
+## Page layouts
 
-Light/dark is toggled via `body.light-mode` / `body.dark-mode` classes.
-`state.theme` is `"light"` or `"dark"` — no other values.
+### index.html (Overview)
+1. Full-bleed campus hero (`campus.png`, -1.6° counter-rotation) with white overlay text + CTA buttons
+2. Ring gauge (left) + Current Standing / stat cards (right) — shows "Your programme · X · change" link
+3. Editorial split: `hero-banner.jpg` left + Malaysian student copy right
+4. Achievement badge grid
+5. Milestone dark card (`house-midtown.jpg` bg) + Degree Progress component bars
 
-### Key CSS classes
-- `.bone-card` / `.panel` — main card containers (bone bg, 1 px border)
-- `.dark-card` — inverted charcoal card (audit status, milestone)
-- `.stat-card` — KPI tile (large serif number + uppercase label)
-- `.btn-outline` / `.btn-solid` / `.btn-ghost` — three button variants; add `.sm` for small
-- `.eyebrow` — amber-deep uppercase label above headings
-- `.chip` — context/metadata pill (border, uppercase, inline value)
-- `.progress-track` / `.progress-fill` — 2 px minimalist progress bar
-- `.sem-card` — semester card (add `.is-current`, `.is-extra`)
-- `.course-row` — editorial course row inside a semester card
-- `.cat-{A…H}` on `.course-row` — coloured 3 px left border per component category
-- `.take-note` / `.has-alerts` — alert panel (amber border, shows on `.has-alerts`)
-- `.audit-row` / `.is-ok` — graduation audit row + completion state
-- `.badge` / `.is-gold` — achievement badge card
+**Hero subtitle is neutral** — does NOT render `data-program-name` (avoids confusing "Bachelor of Risk Mgmt" default). Programme shown as labelled line inside the Standing panel.
 
-### Icons
-All icons are **inline SVG** — no icon font, no external request.
-The `ICONS` map in `ui.js` covers: `overview, planner, analytics, audit, settings,
-menu, close, add, download, reset, light, dark, chevron, arch, trophy, book,
-search, warn, person, cap`.
+### planner.html (Semester Planner)
+1. Slim hero (heading only, no sub-text, no buttons)
+2. **Top row (2-col)**:
+   - Left (`span-7`): Programme Setup — `programSelect`, `trackSelect`, `pathSelect`, `langSelect`, `langSelectSpecific` in a 2-col `.planner-setup-grid` + context chips below
+   - Right (`span-5`): Actions panel (Load Recommended, Export PDF, Reset Plan — full-width stacked buttons) + Find a Course search panel below it
+3. `img-strip` (focus-studio.jpg)
+4. Take Note alert panel
+5. Semester Stack
 
-Use the `icon(name, extraClass)` helper in JS to generate an `<svg class="ic …">` string.
-Add new icons by appending a path string to `ICONS` in `ui.js`.
+### analytics.html (Analytics)
+- GPA Trajectory bar chart + CGPA trend sparkline + GPA table
+- GPA Calculator + CGPA Projection calculators
+- Empty-state hint shown when no grades: `#semBarWrap.is-empty .empty-hint`
 
-To place an icon declaratively in HTML, use `<span data-icon="name"></span>` —
-`hydrateIcons()` (called inside `initChrome()`) replaces it with the SVG.
+### audit.html (Graduation Checklist)
+- Dark status card (eligibility uses `passedCredits()` only — see audit correctness below)
+- Component progress rows (dual-bar: solid=passed, grey ghost=placed-ungraded)
+- Industrial Training split-media (`house-marsa.jpg`)
+- Academic Advisor card
+- Achievement badges
+
+### settings.html (Settings)
+- Programme Setup selectors
+- Appearance + Plan Actions panels
+- Help & Support FAQ
+- About dark card with `campus.png` background image
+
+---
+
+## Audit correctness (critical — 2026-06-02 fix)
+
+**Graduation eligibility is based on PASSED credits only.**
+A course only counts as "done" if it has a real, non-failing grade.
+
+### Functions in core-engine.js
+
+```js
+// Placed (any course in plan, graded or not) — for planner progress displays
+function plannedCredits()
+
+// PASSED (graded with grade not in FAIL_GRADES) — used for graduation eligibility
+function passedCredits()
+
+// componentTotals() returns per-component object with THREE credit counts:
+//   .done   — all placed credits
+//   .passed — graded + non-failing credits (eligibility)
+//   .planned — placed but no grade yet
+function componentTotals()
+```
+
+### renderAudit() behaviour (ui.js)
+
+- **Status card**: "Eligible to Graduate" only when EVERY component's `passed ≥ req`,
+  total `passedCredits() ≥ p.total`, and `cgpa ≥ 2.00`
+- **Status sub-line**: shows "X cr placed but not yet graded" when gap exists
+- **Progress bar**: two segments — solid (passed), grey ghost (placed-ungraded)
+- **Tags**: `Met` (amber) · `Grading pending` (italic, placed≥req but ungraded) · `In progress` · `Not started`
+- **Value label**: "X / Y cr passed" — not "placed"
+
+This fix is **also applied to `SEFB_Dashboard.html`** (the legacy single-page dashboard).
+
+---
+
+## Prerequisite engine (core-engine.js — isPrereqsMet)
+
+Four checks in order:
+1. **Course-code prereqs** — must appear in an earlier semester. B-cat English courses outside the chosen pathway are auto-exempted.
+2. **Pass-grade enforcement** — prereq graded in `FAIL_GRADES = {C-, D+, D, F}` counts as not satisfied.
+3. **Minimum credits** — `c.minCr` requires `creditsBefore(semester) >= c.minCr`.
+4. **Semester offering** — `c.offer = "odd" | "even"` restricts placement to matching semesters.
+
+Lock indicators in add-dropdown: `● Odd/Even sems only · ✕ Prereq failed · 🔒 generic`.
+
+---
+
+## Data layer (data.js)
+
+Verbatim slice of `SEFB_Dashboard.html` lines 1628–2327.
+Defines `GRADES` and `PROGRAMS.{BFIN, BBANK, BECONS, BRMI, BAGRO}`.
+
+**Re-extraction script (PowerShell):**
+```powershell
+$src = [System.IO.File]::ReadAllLines('SEFB_Dashboard.html', [System.Text.Encoding]::UTF8)
+$slice = $src[1627..2326]
+$header = @('/* ===...=== */', '   data.js - SEFB curriculum data ...', '... */', '')
+$out = $header + $slice
+[System.IO.File]::WriteAllLines('app/js/data.js', $out, (New-Object System.Text.UTF8Encoding($false)))
+```
+Must use `[System.IO.File]` with explicit UTF-8 — PowerShell `Get-Content`/`Set-Content` corrupts Unicode.
+
+Programme credit totals: BFIN 122 · BBANK 120 · BECONS 125 · BRMI 120 · BAGRO 125
+
+---
+
+## Charts (charts.js)
+
+### CGPA ring gauge
+- Canvas 440×440 logical px, `max-width:340px` CSS, HiDPI via `dpr + setTransform`.
+- Arc colour uses `_ringAnimTarget` (not the mid-animation value) to prevent red flash during sweep.
+- Dean's List tick at 3.67. Centre serif CGPA value. DOM labels: `#cgpaRingClass`, `#cgpaRingMotiv`.
+- `animateRingGauge(target)` — easing RAF loop.
+
+### GPA bar chart
+- `drawSemBarChart(perSemData)` — amber bars for Dean's List sems (≥3.67), charcoal normal, red <2.00.
+- `#semBarWrap.is-empty` → shows `.empty-hint` text, hides canvas.
+- `redrawCharts()` — wired to resize (debounced 150ms) and theme toggle.
+
+---
+
+## Imagery CSS classes (watchhouse.css)
+
+| Class | Purpose |
+|---|---|
+| `.full-hero` | Full-bleed viewport-wide hero with overlay gradients |
+| `.full-hero-img` | Positioned/scaled background photo (`transform:rotate(-1.6deg) scale(1.12)`) |
+| `.full-hero-content` | Text/CTA overlay, z-index:2 |
+| `.split-media` | 2-col image+copy editorial block (`.reverse` to flip) |
+| `.split-img` / `.split-copy` | Columns of split-media |
+| `.img-strip` | Thin full-width image band with `.strip-cap` overlay |
+| `.dark-card.has-img` | Dark card with image background (`img` + `::after` overlay + `.dc-body`) |
+| `.figure` | Generic image container with hover zoom |
+| `.brand-lockup` | Flex row: logo + brand-mark text |
+| `.brand-logo` | `height:38px` — **must stay at this size** |
+| `.planner-setup-grid` | 2-col grid for Programme Setup fields (Programme spans full width) |
+| `.page-hero--slim` | Reduced-padding hero variant (planner page) |
+| `.empty-hint` | Shown inside `#semBarWrap.is-empty` when no grade data |
+| `.audit-fill.is-planned` | Grey ghost bar segment (placed but ungraded credits) |
+| `.audit-row.is-pending-grade` | Italic tag for "Grading pending" state |
 
 ---
 
 ## Boot sequence (per page)
 
-Every page ends with this minimal inline `<script>`:
-
 ```js
-loadState();      // from core-engine.js — reads localStorage, applies theme
-initChrome();     // from ui.js — sets nav active state, hydrates icons, wires toggles
-renderAll();      // from core-engine.js — dispatches every render fn that exists on this page
-// page-specific extras e.g.:
-gpaCalcRender();  // analytics only
-cgpaCalcRender(); // analytics only
+loadState();      // core-engine.js — reads localStorage, applies theme
+initChrome();     // ui.js — nav active, hydrate icons, wire theme toggle
+renderAll();      // core-engine.js — safe() dispatch to all render fns
+// page-specific:
+gpaCalcRender(); cgpaCalcRender();  // analytics only
+setTimeout(()=>drawSemBarChart(), 60);  // analytics only
 ```
-
-`renderAll()` calls `safe(name)` for every known render function. `safe()` silently
-skips any function that doesn't exist or whose target element is absent — so loading
-`ui.js` on every page is safe even if a given page lacks a `#badges` or `#semesters` div.
-
-Each page declares `<body data-page="pagename">`. `initChrome()` reads this to set the
-active nav link.
 
 ---
 
@@ -147,124 +239,48 @@ active nav link.
 
 ```js
 state = {
-  programId: "BFIN",      // active programme key
-  trackId:   "INV",       // specialization track (empty "" if programme has none)
-  plan:      {},           // { [semesterNumber]: [{code, grade}, …] }
+  programId: "BFIN",      // programme key — default from localStorage
+  trackId:   "INV",
+  plan:      {},           // { [semNum]: [{code, grade?}, …] }
   theme:     "light",      // "light" | "dark"
-  pathId:    "L2",         // English pathway: L1 | L2 | L3 | EX
-  langId:    "MAN",        // Foreign language family: MAN | ARA | JPN | FRA | KOR | OTH
-  extraSems: 0,            // extension semesters added beyond p.semCount
-  semSession:{},           // { [semesterNumber]: "A241" } — UUM session codes
+  pathId:    "L2",
+  langId:    "MAN",
+  extraSems: 0,
+  semSession:{},
   lastSaved: timestamp,
   dismissedAlerts: [],
   alertsMuted: false
 }
 ```
 
-Persisted in `localStorage` under key `"sefb_planner_v2"` (same key as the legacy
-dashboard, so existing student plans load automatically in the new UI).
-
----
-
-## Data layer (data.js)
-
-`data.js` is a **verbatim slice** of `SEFB_Dashboard.html` lines 1628–2327.
-It defines `GRADES` and `PROGRAMS.{BFIN, BBANK, BECONS, BRMI, BAGRO}`.
-
-**If curriculum data changes**, update `SEFB_Dashboard.html` (the canonical source)
-then re-extract: open the root file, copy lines 1628–2327 into `app/js/data.js`,
-keeping the header comment block at the top. Do not edit course objects directly in
-`data.js`.
-
-Programme totals for validation: BFIN 122 cr | BBANK 120 cr | BECONS 125 cr | BRMI 120 cr | BAGRO 125 cr.
-
----
-
-## Prerequisite engine (core-engine.js — isPrereqsMet)
-
-Four checks, evaluated in order:
-1. **Course-code prereqs** — must appear in an *earlier* semester. B-cat English courses
-   outside the student's chosen pathway are automatically exempted.
-2. **Pass-grade enforcement** — a prereq graded in `FAIL_GRADES = {C-, D+, D, F}` counts
-   as not satisfied.
-3. **Minimum credits** — `c.minCr` requires `creditsBefore(semester) >= c.minCr`.
-4. **Semester offering** — `c.offer = "odd" | "even"` restricts which semesters the course
-   can appear in.
-
-Lock indicators in the add dropdown: `● Odd/Even sems only · ✕ Prereq failed · 🔒 generic`.
-
----
-
-## Charts (charts.js)
-
-### CGPA ring gauge
-- Canvas `440×440` logical px, `max-width:300px` via CSS, HiDPI via `dpr` + `setTransform`.
-- Clean full-circle ring: track at low alpha, progress arc with amber/charcoal/error colour
-  depending on tier, Dean's List tick at 3.67, centre serif CGPA value.
-- `animateRingGauge(target)` — easing RAF loop. Call after `computeGPA()`.
-- `_drawRingGauge(cgpa)` — single frame draw (also called by `animateRingGauge`).
-
-### GPA bar chart
-- `drawSemBarChart(perSemData)` — draws per-semester bars. Amber = Dean's-list semester
-  (GPA ≥ 3.67), charcoal = normal, error-red = below 2.00. Amber dashed 3.67 line.
-- Caches last data in `_lastPerData`; call `drawSemBarChart()` (no args) to redraw on
-  resize/theme toggle.
-- `redrawCharts()` — redraws both ring and bar. Wired to `window.resize` (debounced 150 ms).
-  Call from `applyTheme` / `toggleTheme` in `core-engine.js` via `safe("redrawCharts")`.
-
-### DOM elements expected
-| ID | Page | Purpose |
-|---|---|---|
-| `cgpaRingCanvas` | index, (any) | Ring gauge canvas |
-| `cgpaRingClass` | index | Classification label (`data-tier` attribute) |
-| `cgpaRingMotiv` | index | Delta-to-next-tier text |
-| `semBarCanvas` | analytics | Bar chart canvas |
-| `semBarWrap` | analytics | Wrapper div (gets `.is-empty` class when no data) |
-| `deansListBadge` | analytics | HTML pill — never drawn in canvas |
-| `trendSparkline` | analytics | Receives `buildSparkline()` SVG string |
-
----
-
-## Adding a new page
-
-1. Copy the HTML chrome (topbar, drawer, bottomnav, footer, modal/confirm/toast divs,
-   edge divs, script block) from any existing page.
-2. Set `data-page="yourpage"` on `<body>`.
-3. Add `<a data-nav="yourpage" href="yourpage.html">` to all five nav elements (topnav,
-   drawer, bottomnav on every existing page).
-4. Write the page-specific DOM; add IDs matching the render functions you need.
-5. Load only the scripts required; call `loadState(); initChrome(); renderAll();` at the end.
+Key: `"sefb_planner_v2"` — shared with legacy `SEFB_Dashboard.html`.
 
 ---
 
 ## Editing guidelines
 
-- **CSS changes** → `css/watchhouse.css` only. No inline styles except dynamic widths on
-  canvas elements and progress bars.
-- **New icons** → add to the `ICONS` object in `ui.js`; use `icon()` in JS or
-  `data-icon="name"` in HTML.
-- **New render function** → add to `renderAll()`'s dispatch array in `core-engine.js`
-  so it fires on every page that has the target element.
-- **Curriculum edits** → edit `PROGRAMS` in the root `SEFB_Dashboard.html`, then
-  re-extract lines 1628–2327 into `app/js/data.js`.
-- **No external dependencies** — do not add CDN links, `import`, or `require`. Everything
-  must remain self-contained and offline-capable.
-- **No build step** — keep it plain HTML/CSS/JS. The site must open by double-clicking
-  `index.html`.
-- **Custom confirm dialogs** → use `showConfirm(msg, onOk)` from `core-engine.js`.
-  Never use browser-native `confirm()`.
-- **Toast messages** → use `toast(msg)` from `core-engine.js`.
-- **Theme** → call `toggleTheme()` from `core-engine.js`. Never manually set
-  `body.classList` for theming.
+- **CSS** → `css/watchhouse.css` only.
+- **Brand logo size** → `.brand-logo { height:38px }` — do not change without also changing footer logo (42px).
+- **Page "Audit"** → file is `audit.html`, nav key is `"audit"`, visible label is "Checklist". Keep this consistent.
+- **Audit eligibility** → always use `passedCredits()` / `.passed` from `componentTotals()`. Never use `.done` for eligibility — it counts ungraded placements.
+- **Hero subtitle on Overview** → keep neutral text, not `data-program-name` (confuses first-time visitors).
+- **Campus image rotation** → `transform:rotate(-1.6deg) scale(1.12)` on `.full-hero-img` — levels the building sign in `campus.png`.
+- **New icons** → append to `ICONS` in `ui.js`; use `<span data-icon="name">` in HTML.
+- **No external deps** — no CDN, no `import`/`require`. Must work by double-clicking `index.html`.
+- **Custom confirm** → `showConfirm(msg, onOk)`. Never `confirm()`.
+- **Curriculum edits** → edit `SEFB_Dashboard.html`, re-extract `data.js` with PowerShell UTF-8 script above.
 
 ---
 
 ## GitHub Pages deployment
 
-Push the repo to GitHub. Go to **Settings → Pages → Deploy from branch → `main` `/root`**.
-The site lives at `https://<user>.github.io/<repo>/app/`.
+Repo: `mukhrizizraf/sefb_planner_code`
+The **contents of `app/`** (not the folder itself) are at the repo root.
+Pages: Settings → Pages → main → / (root)
+Live: `https://mukhrizizraf.github.io/sefb_planner_code/`
 
-Alternatively, move the contents of `app/` to the repository root and set Pages to
-deploy from `/root` — then the site is at `https://<user>.github.io/<repo>/`.
+**After any edit session, re-upload all changed files.** The most commonly missed files:
+- `css/watchhouse.css` (affects all layout + brand logo size)
+- `images/` folder (new images won't appear if not uploaded)
 
-No build step needed. All assets are relative paths, so the site works at any depth.
+Deployment guide: `build/GITHUB_GUIDE_APP.html` — step-by-step with gotchas.

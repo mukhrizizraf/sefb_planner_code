@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="css/watchhouse.css">
 </head>
 <body data-page="planner" class="light-mode">
+<a href="#main" class="skip-link">Skip to main content</a>
 
 <header class="topbar">
   <div class="brand">
@@ -17,11 +18,12 @@
   <nav class="topnav">
     <a data-nav="overview" href="index.html">Overview</a>
     <a data-nav="planner" href="planner.html">Planner</a>
-    <a data-nav="analytics" href="analytics.html">Analytics</a>
+    <a data-nav="analytics" href="analytics.html">GPA &amp; CGPA Analytics</a>
     <a data-nav="audit" href="audit.html">Checklist</a>
     <a data-nav="settings" href="settings.html">Settings</a>
   </nav>
   <div class="topbar-actions">
+    <a class="icon-btn" href="help.html" aria-label="Help" title="Help" data-nav="help"><span data-icon="help"></span></a>
     <button class="icon-btn" data-theme-toggle><span data-theme-ic></span></button>
     <a class="icon-btn" href="settings.html" aria-label="Profile"><span data-icon="person"></span></a>
   </div>
@@ -30,12 +32,12 @@
 <nav class="drawer" id="mobileDrawer">
   <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
   <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
-  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>Analytics</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>GPA &amp; CGPA</a>
   <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
   <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
 </nav>
 
-<main>
+<main id="main">
 <div class="wrap">
 
   <!-- SLIM HERO -->
@@ -53,11 +55,11 @@
     <div class="span-7 panel">
       <p class="eyebrow card-eyebrow">Programme Setup</p>
       <div class="planner-setup-grid">
-        <div class="field"><label class="field-label">Programme</label><select id="programSelect"></select></div>
-        <div class="field" id="trackField"><label class="field-label">Specialization</label><select id="trackSelect"></select></div>
-        <div class="field" id="pathField"><label class="field-label">English Pathway</label><select id="pathSelect"></select></div>
-        <div class="field" id="langField"><label class="field-label">Foreign Language</label><select id="langSelect"></select></div>
-        <div class="field" id="langField2"><label class="field-label">Language Family</label><select id="langSelectSpecific"></select></div>
+        <div class="field"><label class="field-label" for="programSelect">Programme</label><select id="programSelect"></select></div>
+        <div class="field" id="trackField"><label class="field-label" for="trackSelect">Specialization</label><select id="trackSelect"></select></div>
+        <div class="field" id="pathField"><label class="field-label" for="pathSelect">English Pathway</label><select id="pathSelect"></select></div>
+        <div class="field" id="langField"><label class="field-label" for="langSelect">Foreign Language</label><select id="langSelect"></select></div>
+        <div class="field" id="langField2"><label class="field-label" for="langSelectSpecific">Language Family</label><select id="langSelectSpecific"></select></div>
       </div>
       <div class="context-bar" style="margin-top:16px;padding:0;background:none;border:none">
         <span class="chip">Programme <b id="ctxProgram">—</b></span>
@@ -83,17 +85,20 @@
         <p class="eyebrow card-eyebrow">Find a Course</p>
         <div class="search-box" style="margin-top:12px">
           <span class="search-ic" data-icon="search"></span>
-          <input class="input" id="searchInput" placeholder="Search by code or name…" oninput="plannerSearch(this.value)" autocomplete="off">
-          <div class="search-results" id="searchResults"></div>
+          <input class="input" id="searchInput" type="search" placeholder="Search by code or name…" oninput="plannerSearch(this.value)" autocomplete="off" aria-label="Find a course" aria-describedby="searchHint">
+          <div class="search-results" id="searchResults" role="listbox" aria-label="Course search results"></div>
         </div>
-        <p class="muted" style="font-size:12px;margin-top:10px">Locked courses show why: odd/even offering, failed prereq, or credit threshold.</p>
+        <p class="muted" id="searchHint" style="font-size:12px;margin-top:10px">Locked courses show why: odd/even offering, failed prereq, or credit threshold.</p>
       </div>
     </div>
 
   </section>
 
   <div class="img-strip" style="margin-top:4px">
-    <img src="images/focus-studio.jpg" alt="Semester focus">
+    <picture>
+      <source srcset="images/focus-studio.webp" type="image/webp">
+      <img src="images/focus-studio-opt.jpg" alt="Semester focus" loading="lazy">
+    </picture>
     <div class="strip-cap">
       <p class="eyebrow">Semester Focus</p>
       <h3>Place each course with intention.</h3>
@@ -118,6 +123,10 @@
       <div><p class="eyebrow">Your Plan</p><h2>Semester Stack</h2></div>
       <span class="chip">Total <b id="hsCredits">0 / 0</b></span>
     </div>
+    <div class="panel" style="margin-bottom:20px;padding:clamp(14px,2vw,20px)">
+      <p class="eyebrow" style="margin-bottom:0">Component Colours — the bar beside each course shows its category</p>
+      <div class="cat-legend" id="catLegend"></div>
+    </div>
     <div class="sem-stack" id="semesters"></div>
   </section>
 
@@ -127,7 +136,7 @@
 <footer class="site-footer"><div class="wrap">
   <div class="footer-grid">
     <div class="footer-brand"><a class="brand-lockup" href="index.html"><img class="brand-logo" src="images/sefb.png" alt="SEFB logo"><span class="brand-mark">SEFB <em>Degree&nbsp;Planner</em></span></a><p>A considered degree-planning studio for the UUM School of Economics, Finance &amp; Banking.</p></div>
-    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">Analytics</a></div>
+    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">GPA &amp; CGPA Analytics</a></div>
     <div class="footer-col"><h4>Academic</h4><a href="audit.html">Graduation Checklist</a><a href="settings.html">Programme Setup</a><a href="settings.html#help">Help &amp; Support</a></div>
     <div class="footer-col"><h4>About</h4><a href="settings.html#about">The Project</a><a href="settings.html#help">Help &amp; Support</a></div>
   </div>
@@ -137,13 +146,13 @@
 <nav class="bottomnav">
   <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
   <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
-  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>Analytics</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>GPA &amp; CGPA</a>
   <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
   <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
 </nav>
 
-<div class="modal-bg" id="modal"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
-<div class="modal-bg" id="confirmDialog"><div class="modal-card confirm-card">
+<div class="modal-bg" id="modal" role="dialog" aria-modal="true"><div class="modal-card"><div class="modal-head" id="modalTitle"></div><div class="modal-body" id="modalBody"></div></div></div>
+<div class="modal-bg" id="confirmDialog" role="dialog" aria-modal="true"><div class="modal-card confirm-card">
   <p id="confirmMsg"></p>
   <div class="confirm-actions"><button class="btn-ghost" onclick="confirmResolve(false)">Cancel</button><button class="btn-solid" onclick="confirmResolve(true)">Confirm</button></div>
 </div></div>

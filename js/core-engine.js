@@ -101,6 +101,7 @@ function applyTheme(mode){
     const ic = btn.querySelector("[data-theme-ic]");
     if(ic && typeof icon==="function") ic.innerHTML = icon(mode==="dark" ? "light" : "dark");
     btn.setAttribute("aria-label", mode==="dark" ? "Switch to light mode" : "Switch to dark mode");
+    if(btn.classList.contains("switch")){ btn.setAttribute("role","switch"); btn.setAttribute("aria-checked", mode==="dark" ? "true" : "false"); }
   });
 }
 function toggleTheme(){
@@ -288,6 +289,36 @@ function resetPlan(){
     toast("Plan reset.");
   });
 }
+/* Weighted GPA for one semester's items (helper for the simulator). */
+function _semGpa(items){
+  let cr=0,p=0;
+  (items||[]).forEach(it=>{ const c=getCourse(it.code), g=gp(it.grade); if(c&&g!=null){ cr+=c.cr; p+=g*c.cr; } });
+  return cr ? p/cr : 0;
+}
+/* One-click Dean's List: auto-fill a semester with top grades.
+   Pass a semester number to target that semester; with no argument it falls back
+   to the current semester. A mix of A- (3.67) and A (4.00) always averages ≥ 3.67,
+   so Dean's List is guaranteed regardless of credit weighting. We sprinkle in one
+   B+ for realism but only keep it if the semester still clears the 3.67 threshold. */
+function simulateDeansList(sem){
+  const n=totalSems();
+  let cur = sem ? +sem : 0;
+  if(!cur){
+    for(let s=1;s<=n;s++){ const its=state.plan[s]||[]; if(its.length && its.some(it=>!it.grade)){ cur=s; break; } }
+    if(!cur){ for(let s=1;s<=n;s++){ if((state.plan[s]||[]).length){ cur=s; break; } } }
+  }
+  if(!cur){ toast("Add a few courses to a semester first 🙂"); return; }
+  const items=state.plan[cur]||[];
+  if(!items.length){ toast(`Semester ${cur} has no courses yet — add some first 🙂`); return; }
+  items.forEach((it,i)=>{ it.grade=(i%2===0)?"A-":"A"; });
+  if(items.length>=3){
+    const last=items.length-1, keep=items[last].grade;
+    items[last].grade="B+";
+    if(_semGpa(items) < DEANS_LIST) items[last].grade=keep;
+  }
+  saveState(); renderAll();
+  toast(`Semester ${cur} → Dean's List! GPA ${_semGpa(items).toFixed(2)} 🎉`);
+}
 function addExtraSemester(){
   state.extraSems = (state.extraSems||0) + 1;
   const newIdx = totalSems();
@@ -309,33 +340,53 @@ function removeExtraSemester(){
 /* ============================================================================
    MODALS / CONFIRM / TOAST
 ============================================================================ */
+let _modalTrigger=null;
+function _focusableSelectors(){ return 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'; }
+function _getFocusableElements(container){
+  return Array.from(container.querySelectorAll(_focusableSelectors())).filter(el=>!el.hasAttribute('disabled'));
+}
+function _moveFocusToModal(modalElem){
+  const focusable=_getFocusableElements(modalElem);
+  if(focusable.length>0) focusable[0].focus();
+  else modalElem.focus();
+}
+function _restoreFocus(){
+  if(_modalTrigger && typeof _modalTrigger.focus==='function') _modalTrigger.focus();
+  _modalTrigger=null;
+}
+
 function openModal(title, html){
   const m=$("modal"); if(!m) return;
+  _modalTrigger=document.activeElement;
   $("modalTitle").innerHTML = title + '<button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>';
   $("modalBody").innerHTML = html;
   m.classList.add("active");
+  setTimeout(()=>_moveFocusToModal(m), 10);
 }
-function closeModal(){ const m=$("modal"); if(m) m.classList.remove("active"); }
+function closeModal(){ const m=$("modal"); if(m) m.classList.remove("active"); _restoreFocus(); }
 
 let _confirmCallback=null;
 function showConfirm(msg, onOk){
   const d=$("confirmDialog");
   if(!d){ if(window.confirm(msg)) onOk&&onOk(); return; }
+  _modalTrigger=document.activeElement;
   $("confirmMsg").textContent=msg;
   d.classList.add("active");
   _confirmCallback=onOk;
+  setTimeout(()=>_moveFocusToModal(d), 10);
 }
 function confirmResolve(ok){
   const d=$("confirmDialog"); if(d) d.classList.remove("active");
   if(ok && _confirmCallback) _confirmCallback();
   _confirmCallback=null;
+  _restoreFocus();
 }
 
 let _toastTimer=null;
 function toast(msg){
   let t=$("toast");
   if(!t){
-    t=document.createElement("div"); t.id="toast"; t.className="toast";
+    t=document.createElement("div"); t.id="toast"; t.className="toast"; t.setAttribute("role","status"); t.setAttribute("aria-live","polite");
     document.body.appendChild(t);
   }
   t.textContent=msg;
@@ -350,7 +401,7 @@ function toast(msg){
 ============================================================================ */
 function renderAll(){
   ["renderProgramSelect","renderTrackSelect","renderPathSelect","renderLangSelect",
-   "syncContextBar","renderSemesters","renderHeroStats","renderClassification",
+   "syncContextBar","renderCatLegend","renderSemesters","renderHeroStats","renderClassification",
    "renderDegreeProgress","renderMilestone","renderBadges","renderGpaTable",
    "renderAudit","renderAlerts","renderCharts"].forEach(n=>safe(n));
 }
