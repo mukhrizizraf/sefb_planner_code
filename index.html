@@ -20,12 +20,12 @@
   <nav class="topnav">
     <a data-nav="overview" href="index.html">Overview</a>
     <a data-nav="planner" href="planner.html">Planner</a>
-    <a data-nav="analytics" href="analytics.html">GPA &amp; CGPA Analytics</a>
-    <a data-nav="audit" href="audit.html">Checklist</a>
-    <a data-nav="settings" href="settings.html">Settings</a>
+    <a data-nav="analytics" href="analytics.html">CGPA Simulation</a>
+    <a data-nav="audit" href="audit.html">Graduation Checklist</a>
+    <a data-nav="courselist" href="courselist.html">Course List</a>
+    <a data-nav="help" href="help.html">Help</a>
   </nav>
   <div class="topbar-actions">
-    <a class="icon-btn" href="help.html" aria-label="Help" title="Help" data-nav="help"><span data-icon="help"></span></a>
     <button class="icon-btn" data-theme-toggle><span data-theme-ic></span></button>
     <a class="icon-btn" href="settings.html" aria-label="Profile"><span data-icon="person"></span></a>
   </div>
@@ -35,9 +35,10 @@
 <nav class="drawer" id="mobileDrawer">
   <a data-nav="overview" href="index.html"><span data-icon="overview"></span>Overview</a>
   <a data-nav="planner" href="planner.html"><span data-icon="planner"></span>Planner</a>
-  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>GPA &amp; CGPA</a>
-  <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Checklist</a>
-  <a data-nav="settings" href="settings.html"><span data-icon="settings"></span>Settings</a>
+  <a data-nav="analytics" href="analytics.html"><span data-icon="analytics"></span>CGPA Simulation</a>
+  <a data-nav="audit" href="audit.html"><span data-icon="audit"></span>Graduation Checklist</a>
+  <a data-nav="courselist" href="courselist.html"><span data-icon="courselist"></span>Course List</a>
+  <a data-nav="help" href="help.html"><span data-icon="help"></span>Help</a>
 </nav>
 
 <main id="main">
@@ -45,17 +46,22 @@
   <!-- FULL-BLEED HERO -->
   <section class="full-hero" style="--hero-rot:0deg">
     <picture>
-      <source media="(max-width:768px)" srcset="images/hero-banner-sm.webp" type="image/webp">
-      <source srcset="images/hero-banner.webp" type="image/webp">
-      <img class="full-hero-img" src="images/hero-banner-opt.jpg" alt="A warm, considered interior — your SEFB study space" fetchpriority="high">
+      <source media="(max-width:768px)" srcset="images/uum-campus-sm.webp" type="image/webp">
+      <source srcset="images/uum-campus.webp" type="image/webp">
+      <img class="full-hero-img" src="images/uum-campus.jpg" alt="Aerial view of the Universiti Utara Malaysia campus" fetchpriority="high" style="object-position:center 58%">
     </picture>
     <div class="full-hero-content">
       <p class="eyebrow">SEFB · Universiti Utara Malaysia</p>
-      <h1>Your degree, curated like a craft.</h1>
-      <p class="sub">Plan every semester of your SEFB degree — prerequisites, credits and CGPA, all in one place.</p>
+      <h1>See your path to graduation at a glance.</h1>
+      <p class="sub">From course sequencing to CGPA simulation, organise your SEFB degree with a smarter, more informed planning experience.</p>
       <div class="hero-actions">
         <a class="btn-light" style="background:#fff;color:var(--charcoal);border-color:#fff" href="planner.html">Open Planner</a>
         <a class="btn-light" href="audit.html">Graduation Checklist</a>
+      </div>
+      <div class="hero-tiles" id="heroTiles">
+        <div class="hero-tile"><span class="ht-v" data-countup id="heroProgrammes">5</span><span class="ht-l">SEFB Programmes</span></div>
+        <div class="hero-tile"><span class="ht-v" data-countup id="heroCourses">0</span><span class="ht-l">Courses Mapped</span></div>
+        <div class="hero-tile"><span class="ht-v" data-countup id="heroCgpa">0.00</span><span class="ht-l">Your CGPA Projection</span></div>
       </div>
     </div>
   </section>
@@ -75,9 +81,9 @@
       <p id="standingDesc">Add grades to your planned courses to see your standing and trajectory.</p>
       <p class="prog-line">Your programme · <b data-program-name>—</b> · <a href="settings.html">change</a></p>
       <div class="stat-row" style="margin-top:26px">
-        <div class="stat-card"><div class="v" id="statCredits">0</div><div class="l">Credits Planned</div></div>
-        <div class="stat-card"><div class="v" id="statGraded">0</div><div class="l">Graded Courses</div></div>
-        <div class="stat-card"><div class="v" id="statGradedCr">0</div><div class="l">Graded Credits</div></div>
+        <div class="stat-card"><div class="v" data-countup id="statCredits">0</div><div class="l">Credits Planned</div></div>
+        <div class="stat-card"><div class="v" data-countup id="statGraded">0</div><div class="l">Graded Courses</div></div>
+        <div class="stat-card"><div class="v" data-countup id="statGradedCr">0</div><div class="l">Graded Credits</div></div>
       </div>
     </div>
   </section>
@@ -86,8 +92,9 @@
   <section class="section">
     <div class="split-media">
       <div class="split-img"><picture>
-        <source srcset="images/focus-studio.webp" type="image/webp">
-        <img src="images/focus-studio-opt.jpg" alt="A considered study space" loading="lazy">
+        <source media="(max-width:768px)" srcset="images/hero-banner-sm.webp" type="image/webp">
+        <source srcset="images/hero-banner.webp" type="image/webp">
+        <img src="images/hero-banner-opt.jpg" alt="A focused study environment" loading="lazy" style="object-position:center 60%">
       </picture></div>
       <div class="split-copy">
         <p class="eyebrow">Made for SEFB Students</p>
@@ -109,10 +116,10 @@
 
   <!-- GRADUATION + DEGREE PROGRESS -->
   <section class="section grid cols-12">
-    <div class="span-5 dark-card has-img">
+    <div class="span-5 dark-card has-img mile">
       <picture>
-        <source srcset="images/house-midtown.webp" type="image/webp">
-        <img src="images/house-midtown.jpg" alt="" loading="lazy">
+        <source srcset="images/convocation.webp" type="image/webp">
+        <img src="images/convocation.jpg" alt="UUM graduates celebrating convocation at the Canselori" loading="lazy">
       </picture>
       <div class="dc-body">
         <p class="eyebrow">Milestone</p>
@@ -142,7 +149,7 @@
       <a class="brand-lockup" href="index.html"><img class="brand-logo" src="images/sefb.png" alt="SEFB logo"><span class="brand-mark">SEFB <em>Degree&nbsp;Planner</em></span></a>
       <p>A considered degree-planning studio for the UUM School of Economics, Finance &amp; Banking.</p>
     </div>
-    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">GPA &amp; CGPA Analytics</a></div>
+    <div class="footer-col"><h4>Planner</h4><a href="index.html">Overview</a><a href="planner.html">Semester Planner</a><a href="analytics.html">CGPA Simulation</a></div>
     <div class="footer-col"><h4>Academic</h4><a href="audit.html">Graduation Checklist</a><a href="settings.html">Programme Setup</a><a href="settings.html#help">Help &amp; Support</a></div>
     <div class="footer-col"><h4>About</h4><a href="settings.html#about">The Project</a><a href="settings.html#help">Help &amp; Support</a></div>
   </div>

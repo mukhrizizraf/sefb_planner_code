@@ -51,12 +51,17 @@ function _drawRingGauge(cgpa){
   ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2);
   ctx.strokeStyle=p.track; ctx.lineWidth=SW; ctx.stroke();
 
-  /* progress arc with soft glow */
+  /* progress arc with soft glow — stronger glow for First Class */
   if(frac>0.001){
+    const isFirstClass=(_ringAnimTarget||cgpa)>=3.67;
     ctx.save();
-    ctx.shadowColor=col; ctx.shadowBlur=p.dark?22:10;
+    ctx.shadowColor=col; ctx.shadowBlur=isFirstClass?(p.dark?46:28):(p.dark?22:10);
     ctx.beginPath(); ctx.arc(CX,CY,R,START,END);
     ctx.strokeStyle=col; ctx.lineWidth=SW; ctx.lineCap="round"; ctx.stroke();
+    if(isFirstClass){  /* double-draw to intensify glow */
+      ctx.shadowBlur=isFirstClass?18:8;
+      ctx.lineWidth=SW-4; ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -96,7 +101,7 @@ function _drawRingGauge(cgpa){
   }
   if(rmEl){
     if(t<=0){ rmEl.textContent="Add grades to begin"; }
-    else if(t>=3.67){ rmEl.textContent="Dean's List standing — top tier."; }
+    else if(t>=3.67){ rmEl.textContent=""; }
     else{
       const nxt=[{v:3.67,n:"First Class"},{v:3.0,n:"Second Upper"},{v:2.0,n:"Second Lower"}].find(x=>x.v>t);
       rmEl.textContent = nxt ? `+${(nxt.v-t).toFixed(2)} to ${nxt.n}` : "";
@@ -117,10 +122,28 @@ function animateRingGauge(target){
 }
 
 /* ─────────────────────── SEMESTER BAR CHART ─────────────────────── */
-let _lastPerData=[];
+let _lastPerData=[], _barRAF=null, _barAnimT=1;
+
+function _animateBars(){
+  if(_barRAF) cancelAnimationFrame(_barRAF);
+  _barAnimT=0;
+  const noMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  if(noMotion){ _barAnimT=1; drawSemBarChart(); return; }
+  const start=performance.now(), dur=700;
+  (function tick(now){
+    _barAnimT=Math.min(1,(now-start)/dur);
+    const e=1-Math.pow(1-_barAnimT,3);  // ease-out-cubic
+    _drawBarsFrame(e);
+    if(_barAnimT<1) _barRAF=requestAnimationFrame(tick); else _barRAF=null;
+  })(start);
+}
 
 function drawSemBarChart(perSemData){
-  if(perSemData) _lastPerData=perSemData;
+  if(perSemData){ _lastPerData=perSemData; _animateBars(); return; }
+  _drawBarsFrame(_barAnimT);
+}
+
+function _drawBarsFrame(t){
   const canvas=$("semBarCanvas"); if(!canvas) return;
   const data=(_lastPerData||[]).filter(r=>r.cr>0);
   const wrap=$("semBarWrap");
@@ -167,10 +190,12 @@ function drawSemBarChart(perSemData){
   data.forEach((r,i)=>{
     const cx=xPx(i), bx=Math.round(cx-BW/2), yBaseline=MT+PH;
     if(r.gpa===null){
-      const by=Math.round(yBaseline-PH*0.05), bh=Math.round(PH*0.05);
+      const bh=Math.round(PH*0.05*t); const by=yBaseline-bh;
       ctx.fillStyle=p.track; ctx.fillRect(bx,by,BW,bh);
     } else {
-      const by=yPx(r.gpa)-0.5, bh=Math.round(yBaseline-by), rr=Math.min(4,BW/4);
+      const fullBh=Math.round(yBaseline-yPx(r.gpa)+0.5);
+      const bh=Math.round(fullBh*t); const by=yBaseline-bh;
+      const rr=t===1?Math.min(4,BW/4):0;
       const isDeans=r.gpa>=DEANS_LIST, isFail=r.gpa<2.0;
       const top=isFail?p.err:(isDeans?p.amberB:p.barTop);
       const bot=isFail?p.err:(isDeans?p.amber:p.barBot);
@@ -178,17 +203,20 @@ function drawSemBarChart(perSemData){
       g.addColorStop(0,top); g.addColorStop(1,bot);
       ctx.fillStyle=g;
       ctx.beginPath();
-      ctx.moveTo(bx,by+bh);
-      ctx.lineTo(bx,by+rr);
-      ctx.arcTo(bx,by,bx+rr,by,rr);
-      ctx.lineTo(bx+BW-rr,by);
-      ctx.arcTo(bx+BW,by,bx+BW,by+rr,rr);
-      ctx.lineTo(bx+BW,by+bh);
+      if(rr>0){
+        ctx.moveTo(bx,by+bh); ctx.lineTo(bx,by+rr);
+        ctx.arcTo(bx,by,bx+rr,by,rr); ctx.lineTo(bx+BW-rr,by);
+        ctx.arcTo(bx+BW,by,bx+BW,by+rr,rr); ctx.lineTo(bx+BW,by+bh);
+      } else { ctx.rect(bx,by,BW,bh); }
       ctx.closePath(); ctx.fill();
-      /* value label */
-      ctx.fillStyle=p.ink; ctx.font=`700 13px ${SANS}`;
-      ctx.textAlign="center"; ctx.textBaseline="alphabetic";
-      ctx.fillText(r.gpa.toFixed(2), cx, by-7);
+      /* value label — only show when mostly grown */
+      if(t>0.7){
+        ctx.globalAlpha=Math.min(1,(t-0.7)/0.3);
+        ctx.fillStyle=p.ink; ctx.font=`700 13px ${SANS}`;
+        ctx.textAlign="center"; ctx.textBaseline="alphabetic";
+        ctx.fillText(r.gpa.toFixed(2), cx, yBaseline-bh-7);
+        ctx.globalAlpha=1;
+      }
     }
     /* x label */
     ctx.fillStyle=p.sub; ctx.font=`600 12px ${SANS}`;

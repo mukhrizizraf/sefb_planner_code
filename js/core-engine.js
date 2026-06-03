@@ -19,7 +19,7 @@ function safe(name, ...args){
    CONSTANTS
 ============================================================================ */
 const STORAGE_KEY = "sefb_planner_v2";
-const UUM_SESSIONS = ["A231","A232","A241","A242","A251","A252","A261","A262","A271","A272","A281","A282"];
+const UUM_SESSIONS = ["A241","A242","A251","A252","A261","A262","A271","A272","A281","A282"];
 const MIN_CR = 12, MAX_CR = 20;
 const DEANS_LIST = 3.67;
 const PASS_THRESHOLD = 2.00;
@@ -43,6 +43,8 @@ const LANG_LABELS = {
   FRA:"French", KOR:"Korean", OTH:"Other Foreign Language"
 };
 const LANG_FAMILY_DIGIT = {MAN:"5", ARA:"2", JPN:"3", FRA:"4", KOR:"6"};
+const CAT_LABEL = {A:"University Core",B:"English Core",C:"Program Core",D:"Specialization",
+  E:"Programme Elective",F:"Free Elective",G:"Industrial Training",H:"Industrial Training"};
 
 /* ============================================================================
    STATE & PERSISTENCE
@@ -401,7 +403,7 @@ function toast(msg){
 ============================================================================ */
 function renderAll(){
   ["renderProgramSelect","renderTrackSelect","renderPathSelect","renderLangSelect",
-   "syncContextBar","renderCatLegend","renderSemesters","renderHeroStats","renderClassification",
+   "syncContextBar","renderCatLegend","renderCourseList","renderHeroTiles","renderSemesters","renderHeroStats","renderClassification",
    "renderDegreeProgress","renderMilestone","renderBadges","renderGpaTable",
    "renderAudit","renderAlerts","renderCharts"].forEach(n=>safe(n));
 }

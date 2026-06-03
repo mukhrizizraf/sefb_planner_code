@@ -5,8 +5,7 @@
    F-field sub-sections, placement/lock hints) so every enforcement rule holds.
 ============================================================================ */
 
-const CAT_LABEL = {A:"University Core",B:"English Core",C:"Program Core",D:"Specialization",
-  E:"Programme Elective",F:"Free Elective",G:"Industrial Training",H:"Industrial Training"};
+/* CAT_LABEL now lives in core-engine.js (shared with the Course List page). */
 
 /* Category colour legend — only shows the categories this programme actually uses. */
 function renderCatLegend(){
@@ -53,6 +52,7 @@ function renderSemesters(){
           <h3 class="sem-title">${isExtra?"Extension "+s:"Semester "+s}${s===currentSem?' <span class="sem-now">Current</span>':""}</h3>
         </div>
         <div class="sem-head-right">
+          ${items.length?`<button class="btn-deans sem-head-deans" onclick="simulateDeansList(${s})">🎉 Simulate a Dean's List semester for me!</button>`:""}
           <select class="sem-session" title="Academic session" aria-label="Academic session for ${isExtra?'extension '+s:'semester '+s}" onchange="setSemSession(${s},this.value)">
             <option value="">Session…</option>${sessOpts}
           </select>
@@ -67,7 +67,6 @@ function renderSemesters(){
         <select id="addSel-${s}" aria-label="Add course to semester ${s}"><option value="">+ Add course to this semester…</option></select>
         <button class="btn-outline sm" onclick="addCourse(${s})">${icon("add")} Add</button>
       </div>
-      ${items.length?`<button class="btn-deans" style="width:100%;margin-top:12px" onclick="simulateDeansList(${s})">🎉 Simulate a Dean's List semester for me!</button>`:""}
       <div class="sem-foot">
         <div class="sem-foot-row">
           <span class="sem-foot-lbl">TOTAL CREDITS</span>

@@ -30,7 +30,8 @@ const ICONS = {
   warn:'<path d="M12 2 1 21h22L12 2Zm0 5 7.5 13h-15L12 7Zm-1 4v4h2v-4h-2Zm0 6v2h2v-2h-2Z"/>',
   person:'<path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 6v2h18v-2c0-3.5-4-6-9-6Z"/>',
   cap:'<path d="M12 3 1 9l11 6 9-4.9V17h2V9L12 3ZM5 13.2V17c0 1.7 3.1 3 7 3s7-1.3 7-3v-3.8l-7 3.8-7-3.6Z"/>',
-  help:'<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-1-5h2v2h-2v-2Zm1.9-8.6c-1.9-.4-3.6.7-4 2.3l1.9.5c.2-.7.9-1.1 1.6-1 .7.1 1.1.7 1 1.3-.1.5-.5.8-1.1 1.2-.8.5-1.3 1.1-1.3 2.3h2c0-.6.2-.9.9-1.4.8-.5 1.5-1.2 1.6-2.3.1-1.4-.9-2.7-2.6-3.1Z"/>'
+  help:'<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-1-5h2v2h-2v-2Zm1.9-8.6c-1.9-.4-3.6.7-4 2.3l1.9.5c.2-.7.9-1.1 1.6-1 .7.1 1.1.7 1 1.3-.1.5-.5.8-1.1 1.2-.8.5-1.3 1.1-1.3 2.3h2c0-.6.2-.9.9-1.4.8-.5 1.5-1.2 1.6-2.3.1-1.4-.9-2.7-2.6-3.1Z"/>',
+  courselist:'<path d="M4 4h16v2H4V4Zm0 5h16v2H4V9Zm0 5h16v2H4v-2Zm0 5h10v2H4v-2Z"/>'
 };
 function icon(name, cls){
   return `<svg class="ic${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]||''}</svg>`;
@@ -58,6 +59,47 @@ function initChrome(){
     drawer.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>document.body.classList.remove("drawer-open")));
   }
   applyTheme(state.theme);
+  setTimeout(()=>{ initReveal(); countUpOnReveal(); }, 0);  // after first renderAll so values exist
+}
+
+/* Scroll-reveal: fade + slide-up major content blocks as they enter the viewport.
+   Adds the .reveal class only to below-fold blocks (no flash for above-fold content),
+   and skips entirely under prefers-reduced-motion. */
+let _revealDone=false;
+function initReveal(){
+  if(_revealDone) return; _revealDone=true;
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if(!("IntersectionObserver" in window)) return;
+  const blocks=document.querySelectorAll("main .section, .split-media, .help-step, .help-bonus");
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("reveal-in"); io.unobserve(e.target); } });
+  }, {threshold:0.1, rootMargin:"0px 0px -6% 0px"});
+  const vh=window.innerHeight||800;
+  blocks.forEach((el)=>{
+    if(el.getBoundingClientRect().top < vh*0.88) return;  // already visible — leave it
+    el.classList.add("reveal"); io.observe(el);
+  });
+}
+
+/* Count a number element up from 0 to its rendered value, once, when it first reveals. */
+function countUpOnReveal(){
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if(!("IntersectionObserver" in window) || typeof animateNumber!=="function") return;
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting) return;
+      const el=e.target; io.unobserve(el);
+      const raw=(el.textContent||"").trim();
+      const m=raw.match(/-?\d+(\.\d+)?/); if(!m) return;
+      const target=parseFloat(m[0]);
+      const dec=(m[0].split(".")[1]||"").length;
+      const pre=raw.slice(0,m.index), suf=raw.slice(m.index+m[0].length);
+      el.textContent=(0).toFixed(dec);          // reset so animateNumber counts up from 0
+      animateNumber(el, target, dec, 1000);
+      if(pre||suf) setTimeout(()=>{ el.textContent=pre+target.toFixed(dec)+suf; }, 1050);
+    });
+  }, {threshold:0.4});
+  document.querySelectorAll("[data-countup]").forEach(el=>io.observe(el));
 }
 
 /* ─────────────────────── SELECTORS ─────────────────────── */
@@ -165,7 +207,7 @@ function renderClassification(){
   const sd=$("standingDesc");
   if(sd){
     if(cgpa<=0) sd.textContent="Add grades to your planned courses to see your standing and trajectory.";
-    else if(cgpa>=DEANS_LIST) sd.textContent="You are performing in the top tier of the cohort. Maintain this trajectory for the Dean's List.";
+    else if(cgpa>=DEANS_LIST) sd.textContent="You are on track for First Class Honours. Keep this trajectory to the finish line.";
     else sd.textContent="A steady, considered trajectory. Keep building credits with strong grades to climb the next tier.";
   }
   let gradedCr=0, graded=0;
@@ -311,7 +353,7 @@ function renderAudit(){
   const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
   set("auditStatusTitle", allOk?"Eligible to Graduate":"Not Yet Eligible");
   set("auditStatusSub", allOk
-    ? `All credits graded and passed · Final CGPA ${cgpa.toFixed(2)}${cgpa>=DEANS_LIST?" · Dean's List":""}`
+    ? `All credits graded and passed · Final CGPA ${cgpa.toFixed(2)} · ${cgpa>=DEANS_LIST?"First Class Honours":cgpa>=3.00?"Second Class Upper":cgpa>=2.00?"Second Class Lower":"Conditional"}`
     : `${checks.length-metCount} requirement${checks.length-metCount===1?"":"s"} remaining · ${totalPlaced-totalPassed} cr placed but not yet graded`);
   set("auditCompletionPct", completion+"%");
   const statusEl=$("auditStatus"); if(statusEl) statusEl.dataset.ok=allOk?"1":"0";
@@ -398,4 +440,43 @@ function renderAlerts(){
       <button class="alert-x" onclick="dismissAlert('${h}')" aria-label="Dismiss">${icon('close')}</button>
     </div>`;
   }).join("");
+}
+
+/* ─────────────────────── COURSE LIST (reference table) ─────────────────────── */
+function renderCourseList(){
+  const host=$("courseListBody"); if(!host) return;
+  const p=PROGRAMS[state.programId]; if(!p) return;
+  const q=((($("courseSearch")||{}).value)||"").trim().toLowerCase();
+  // hide foreign-language courses that aren't the chosen family (same rule as the planner)
+  let list=p.courses.filter(c=>!(c.cat==="D" && c.lang && c.lang!==state.langId));
+  if(q){
+    list=list.filter(c=>
+      c.code.toLowerCase().includes(q) ||
+      (c.en||"").toLowerCase().includes(q) ||
+      (c.ms||"").toLowerCase().includes(q) ||
+      String(c.cat||"").toLowerCase().includes(q) ||
+      (CAT_LABEL[c.cat]||"").toLowerCase().includes(q) ||
+      (c.pre||[]).join(" ").toLowerCase().includes(q)
+    );
+  }
+  const cnt=$("courseListCount"); if(cnt) cnt.textContent=list.length;
+  if(!list.length){ host.innerHTML=`<tr><td colspan="5" class="cl-empty">No courses match “${q}”.</td></tr>`; return; }
+  host.innerHTML=list.map(c=>`
+    <tr>
+      <td class="cl-code">${c.code}</td>
+      <td><div class="cl-en">${c.en}</div><div class="cl-ms">${c.ms}</div></td>
+      <td><span class="cl-cat" style="--c:var(--cat-${c.cat})" title="${CAT_LABEL[c.cat]||c.cat}">${c.cat}</span></td>
+      <td class="cl-cr">${c.cr}</td>
+      <td class="cl-pre">${(c.pre&&c.pre.length)?c.pre.join(", "):"None"}</td>
+    </tr>`).join("");
+}
+
+/* Overview hero stat tiles — programmes, total courses mapped, live CGPA projection. */
+function renderHeroTiles(){
+  if(!$("heroTiles")) return;
+  const prog=$("heroProgrammes"); if(prog) prog.textContent=String(Object.keys(PROGRAMS).length);
+  const courses=$("heroCourses");
+  if(courses){ const n=Object.values(PROGRAMS).reduce((a,p)=>a+(p.courses?p.courses.length:0),0); courses.textContent=n+"+"; }
+  const cg=$("heroCgpa");
+  if(cg){ const {cgpa}=computeGPA(); cg.textContent=(cgpa||0).toFixed(2); }
 }
