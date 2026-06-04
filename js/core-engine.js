@@ -45,6 +45,14 @@ const LANG_LABELS = {
 const LANG_FAMILY_DIGIT = {MAN:"5", ARA:"2", JPN:"3", FRA:"4", KOR:"6"};
 const CAT_LABEL = {A:"University Core",B:"English Core",C:"Program Core",D:"Specialization",
   E:"Programme Elective",F:"Free Elective",G:"Industrial Training",H:"Industrial Training"};
+/* Per-programme category name. The category LETTER means different things per programme
+   (e.g. BECONS "F" = Field Elective, "G" = Free Elective), so always prefer the programme's
+   own component name; fall back to the generic CAT_LABEL only if there's no component. */
+function catName(cat, p){
+  p = p || PROGRAMS[state.programId];
+  const comp = p && p.components && p.components.find(c=>c.l===cat);
+  return (comp && comp.en) || CAT_LABEL[cat] || cat;
+}
 
 /* ============================================================================
    STATE & PERSISTENCE
@@ -54,6 +62,7 @@ let state = {
   plan:{}, theme:"light",
   pathId:"L2",
   langId:"MAN",
+  fieldId:"",          // chosen field elective (programmes with fFields, e.g. BECONS)
   extraSems:0
 };
 
@@ -83,6 +92,9 @@ function loadState(){
   if(state.theme!=="dark" && state.theme!=="light") state.theme="light";
   if(!state.pathId) state.pathId="L2";
   if(!state.langId) state.langId="MAN";
+  { const p=PROGRAMS[state.programId];   // valid field elective for this programme, else none
+    if(p && p.fFields && p.fFields.length){ if(!state.fieldId || !p.fFields.some(f=>f.id===state.fieldId)) state.fieldId=p.fFields[0].id; }
+    else state.fieldId=""; }
   if(typeof state.extraSems!=="number") state.extraSems=0;
   if(!state.lastSaved) state.lastSaved=Date.now();
   if(!Array.isArray(state.dismissedAlerts)) state.dismissedAlerts=[];
@@ -154,6 +166,7 @@ function availableFor(s){
   return p.courses.filter(c=>{
     if(placed.has(c.code)) return false;
     if(c.cat==="D" && c.track && state.trackId && c.track!==state.trackId) return false;
+    if(c.cat==="F" && c.field && state.fieldId && c.field!==state.fieldId) return false;
     return true;
   });
 }
@@ -281,9 +294,28 @@ function loadRecommended(){
     state.plan=emptyPlan();
     Object.entries(rec).forEach(([s,codes])=>{ state.plan[s]=codes.map(c=>({code:c,grade:""})); });
     if(state.langId && state.langId !== "MAN"){ substituteLangCourses("MAN", state.langId); }
+    /* fill in the field elective the student chose in the toolbar (programmes with fFields) */
+    if(p.fFields && p.fFields.length && state.fieldId){ substituteFieldCourses(state.fieldId); }
     saveState(); renderAll();
     toast("Recommended plan loaded.");
   });
+}
+/* Replace every F-cat field-elective slot in the loaded plan with the chosen field's
+   courses (in code order, which keeps foundation→advanced prerequisite order). */
+function substituteFieldCourses(toFieldId){
+  const p=PROGRAMS[state.programId];
+  if(!p.fFields || !p.fFields.length) return;
+  const queue=p.courses.filter(c=>c.cat==="F" && c.field===toFieldId).sort((a,b)=>a.code.localeCompare(b.code));
+  let qi=0;
+  for(let s=1;s<=totalSems();s++){
+    const items=state.plan[s]||[];
+    items.forEach((it,idx)=>{
+      const c=getCourse(it.code);
+      if(c && c.cat==="F" && c.field){
+        if(qi<queue.length){ items[idx]={code:queue[qi].code, grade:it.grade||""}; qi++; }
+      }
+    });
+  }
 }
 function resetPlan(){
   showConfirm("Reset your plan? This cannot be undone.", ()=>{
@@ -402,7 +434,7 @@ function toast(msg){
    Each render guards on its own target element, so missing ones are skipped.
 ============================================================================ */
 function renderAll(){
-  ["renderProgramSelect","renderTrackSelect","renderPathSelect","renderLangSelect",
+  ["renderProgramSelect","renderTrackSelect","renderFieldSelect","renderPathSelect","renderLangSelect",
    "syncContextBar","renderCatLegend","renderCourseList","renderHeroTiles","renderSemesters","renderHeroStats","renderClassification",
    "renderDegreeProgress","renderMilestone","renderBadges","renderGpaTable",
    "renderAudit","renderAlerts","renderCharts"].forEach(n=>safe(n));

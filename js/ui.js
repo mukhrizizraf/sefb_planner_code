@@ -116,6 +116,7 @@ function renderProgramSelect(){
     state.programId=sel.value;
     const p=PROGRAMS[sel.value];
     state.trackId=(p.tracks&&p.tracks[0]?.id)||"";
+    state.fieldId=(p.fFields&&p.fFields[0]?.id)||"";
     state.plan=emptyPlan();
     saveState(); renderAll();
     toast(`Switched to ${p.short}.`);
@@ -131,6 +132,18 @@ function renderTrackSelect(){
   if(!state.trackId) state.trackId=p.tracks[0].id;
   sel.value=state.trackId;
   sel.onchange=()=>{ state.trackId=sel.value; saveState(); renderAll(); };
+}
+/* Field-elective selector — mirrors the track selector, for programmes with fFields (e.g. BECONS). */
+function renderFieldSelect(){
+  const sel=$("fieldSelect"), wrap=$("fieldField"); if(!sel||!wrap) return;
+  const p=PROGRAMS[state.programId];
+  if(!p.fFields||!p.fFields.length){ wrap.style.display="none"; return; }
+  wrap.style.display="";
+  sel.innerHTML="";
+  p.fFields.forEach(f=>{ const o=document.createElement("option"); o.value=f.id; o.textContent=`${f.en} — ${f.ms}`; sel.appendChild(o); });
+  if(!state.fieldId || !p.fFields.some(f=>f.id===state.fieldId)) state.fieldId=p.fFields[0].id;
+  sel.value=state.fieldId;
+  sel.onchange=()=>{ state.fieldId=sel.value; saveState(); renderAll(); };
 }
 function renderPathSelect(){
   const sel=$("pathSelect"), wrap=$("pathField"); if(!sel||!wrap) return;
@@ -447,25 +460,37 @@ function renderCourseList(){
   const host=$("courseListBody"); if(!host) return;
   const p=PROGRAMS[state.programId]; if(!p) return;
   const q=((($("courseSearch")||{}).value)||"").trim().toLowerCase();
-  // hide foreign-language courses that aren't the chosen family (same rule as the planner)
-  let list=p.courses.filter(c=>!(c.cat==="D" && c.lang && c.lang!==state.langId));
+  // mirror the Planner's availableFor() filtering: show only the chosen specialization
+  // track's D-cat courses, and only the chosen foreign-language family.
+  let list=p.courses.filter(c=>{
+    if(c.cat==="D" && c.lang  && c.lang  !== state.langId)  return false;  // language family
+    if(c.cat==="D" && c.track && state.trackId && c.track !== state.trackId) return false;  // specialization track
+    if(c.cat==="F" && c.field && state.fieldId && c.field !== state.fieldId) return false;  // field elective
+    return true;
+  });
   if(q){
     list=list.filter(c=>
       c.code.toLowerCase().includes(q) ||
       (c.en||"").toLowerCase().includes(q) ||
       (c.ms||"").toLowerCase().includes(q) ||
       String(c.cat||"").toLowerCase().includes(q) ||
-      (CAT_LABEL[c.cat]||"").toLowerCase().includes(q) ||
+      catName(c.cat,p).toLowerCase().includes(q) ||
       (c.pre||[]).join(" ").toLowerCase().includes(q)
     );
   }
   const cnt=$("courseListCount"); if(cnt) cnt.textContent=list.length;
   if(!list.length){ host.innerHTML=`<tr><td colspan="5" class="cl-empty">No courses match “${q}”.</td></tr>`; return; }
+  // Free-Elective field label (mirrors the planner's "choose ONE field" grouping for F-cat)
+  const fieldNote=c=>{
+    if(c.cat!=="F" || !c.field || !(p.fFields&&p.fFields.length)) return "";
+    const f=p.fFields.find(x=>x.id===c.field);
+    return f?`<div class="cl-field">Elective field · ${f.en}</div>`:"";
+  };
   host.innerHTML=list.map(c=>`
     <tr>
       <td class="cl-code">${c.code}</td>
-      <td><div class="cl-en">${c.en}</div><div class="cl-ms">${c.ms}</div></td>
-      <td><span class="cl-cat" style="--c:var(--cat-${c.cat})" title="${CAT_LABEL[c.cat]||c.cat}">${c.cat}</span></td>
+      <td><div class="cl-en">${c.en}</div><div class="cl-ms">${c.ms}</div>${fieldNote(c)}</td>
+      <td><span class="cl-cat" style="--c:var(--cat-${c.cat})" title="${catName(c.cat,p)}">${c.cat}</span></td>
       <td class="cl-cr">${c.cr}</td>
       <td class="cl-pre">${(c.pre&&c.pre.length)?c.pre.join(", "):"None"}</td>
     </tr>`).join("");

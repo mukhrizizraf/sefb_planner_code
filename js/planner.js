@@ -13,7 +13,7 @@ function renderCatLegend(){
   const p=PROGRAMS[state.programId]; if(!p){ host.innerHTML=""; return; }
   const cats=[...new Set(p.courses.map(c=>c.cat))].sort();
   host.innerHTML=cats.map(cat=>
-    `<span class="cat-legend-item" style="--c:var(--cat-${cat})"><span class="cat-swatch"></span><b>${cat}</b> ${CAT_LABEL[cat]||cat}</span>`
+    `<span class="cat-legend-item" style="--c:var(--cat-${cat})"><span class="cat-swatch"></span><b>${cat}</b> ${catName(cat,p)}</span>`
   ).join("");
 }
 
@@ -93,7 +93,7 @@ function renderSemesters(){
         <span class="course-code">${cc.code}</span>
         <div class="course-body">
           <div class="course-name">${cc.en}${pr.ok?"":' <span class="lock-pill">Locked</span>'}${failed?' <span class="lock-pill warn">Retake</span>':""}</div>
-          <div class="course-meta">${cc.ms} · <span class="cat-name" style="--c:var(--cat-${cc.cat})"><span class="cat-dot"></span>${cc.cat}. ${CAT_LABEL[cc.cat]||cc.cat}</span></div>
+          <div class="course-meta">${cc.ms} · <span class="cat-name" style="--c:var(--cat-${cc.cat})"><span class="cat-dot"></span>${cc.cat}. ${catName(cc.cat,p)}</span></div>
         </div>
         <div class="course-tail">
           <span class="course-cr">${cc.cr} cr</span>
@@ -144,8 +144,8 @@ function buildAddDropdown(addSel, s){
       o.value=cc.code;
       let hint="";
       if(!pr.ok){
-        if(pr.missing.some(m=>m.includes("offered odd")))       hint="● Odd sems only · ";
-        else if(pr.missing.some(m=>m.includes("offered even"))) hint="● Even sems only · ";
+        if(pr.missing.some(m=>m.includes("offered odd")))       hint="● Odd sems (1·3·5·7) only · ";
+        else if(pr.missing.some(m=>m.includes("offered even"))) hint="● Even sems (2·4·6) only · ";
         else if(pr.missing.some(m=>m.includes("failed")))       hint="✕ Prereq failed · ";
         else                                                     hint="🔒 ";
       }
@@ -253,7 +253,10 @@ function plannerSearch(q){
   const box=$("searchResults"); if(!box) return;
   if(!q){ box.innerHTML=""; box.classList.remove("open"); return; }
   const p=PROGRAMS[state.programId];
-  const hits=p.courses.filter(c=>c.code.toLowerCase().includes(q)||c.en.toLowerCase().includes(q)||c.ms.toLowerCase().includes(q)).slice(0,8);
+  const hits=p.courses.filter(c=>{
+    if(c.cat==="D" && c.lang && c.lang!==state.langId) return false;  // hide non-selected language family (match the add-course dropdown)
+    return c.code.toLowerCase().includes(q)||c.en.toLowerCase().includes(q)||c.ms.toLowerCase().includes(q);
+  }).slice(0,8);
   box.classList.add("open");
   box.innerHTML=hits.length?hits.map(c=>`<div class="search-hit"><span class="sh-code">${c.code}</span><span class="sh-name">${c.en}</span><span class="sh-cr">${c.cr}cr</span></div>`).join("")
     :`<div class="search-empty">No course matches “${q}”.</div>`;

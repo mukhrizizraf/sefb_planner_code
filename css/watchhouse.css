@@ -579,7 +579,7 @@ body.dark-mode .switch::after{transform:translateX(26px);background:#fff}
   border-bottom:1px solid var(--line)}
 .full-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 34%;
   transform-origin:center;animation:heroZoom 26s ease-in-out infinite alternate;
-  filter:sepia(.6) saturate(.92) hue-rotate(-12deg) brightness(.88) contrast(1.05)}  /* warm coffee wash */
+  filter:sepia(.34) saturate(1) hue-rotate(-8deg) brightness(.95) contrast(1.03)}  /* light warm wash */
 @keyframes heroZoom{
   0%  {transform:rotate(var(--hero-rot,0deg)) scale(1.06)}
   100%{transform:rotate(var(--hero-rot,0deg)) scale(1.14)}
@@ -627,9 +627,9 @@ body.dark-mode .switch::after{transform:translateX(26px);background:#fff}
 .dark-card.has-img{padding:0;min-height:300px;display:flex;align-items:flex-end}
 .dark-card.has-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.42}
 .dark-card.has-img::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(14,12,9,.9),rgba(14,12,9,.4))}
-/* milestone: lighter, warm-brown overlay so the convocation photo reads bright */
-.dark-card.has-img.mile img{opacity:.7}
-.dark-card.has-img.mile::after{background:linear-gradient(0deg,rgba(28,16,7,.92) 4%,rgba(58,36,18,.42) 52%,rgba(86,56,30,.18) 100%)}
+/* milestone: light, mostly-neutral overlay — only enough dark at the bottom for the text */
+.dark-card.has-img.mile img{opacity:.9}
+.dark-card.has-img.mile::after{background:linear-gradient(0deg,rgba(18,13,8,.88) 0%,rgba(34,24,15,.46) 30%,rgba(50,38,24,.12) 62%,rgba(60,46,30,0) 100%)}
 .dark-card.has-img .dc-body{position:relative;z-index:2;padding:clamp(26px,3.4vw,44px);width:100%}
 
 /* enlarge + lift the ring */
@@ -704,6 +704,7 @@ table.cl-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-
 .cl-code{font-size:12.5px;letter-spacing:.04em;color:var(--sub);font-weight:600;white-space:nowrap}
 .cl-en{font-weight:600;color:var(--ink)}
 .cl-ms{font-size:12.5px;color:var(--warm);margin-top:2px}
+.cl-field{font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--amber-deep);margin-top:4px}
 .cl-cat{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;
   font-size:12px;font-weight:700;color:#fff;background:var(--c,var(--warm))}
 .cl-cr{text-align:center;font-weight:600}
