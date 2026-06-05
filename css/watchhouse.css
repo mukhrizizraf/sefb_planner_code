@@ -258,6 +258,10 @@ body.drawer-open .drawer{transform:translateX(0)}
 .prog-line b{color:var(--ink);font-weight:600}
 .prog-line a{color:var(--amber-deep);border-bottom:1px solid var(--line-strong)}
 .prog-line a:hover{border-color:var(--amber-deep)}
+.class-legend{display:grid;grid-template-columns:1fr 1fr;gap:9px 18px;margin-top:22px;width:100%;max-width:340px;
+  border:1px solid var(--line);padding:14px 18px;background:var(--surface)}
+.cl-item{display:inline-flex;align-items:center;gap:9px;font-size:12px;font-weight:600;color:var(--sub);text-align:left}
+.cl-dot{width:11px;height:11px;border-radius:50%;background:var(--d,var(--warm));flex:none}
 #deansListBadge{display:inline-flex;align-items:center;gap:8px;margin-top:14px;border:1px solid var(--amber);
   color:var(--amber-deep);padding:7px 14px;border-radius:var(--pill);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
 

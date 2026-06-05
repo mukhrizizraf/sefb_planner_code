@@ -25,7 +25,14 @@ function _pal(){
     barBot: dark ? "#bdb8b1" : "#3a3733"
   };
 }
-function _arcColor(cgpa, p){ return cgpa>0 && cgpa<2.0 ? p.err : p.amberB; }
+/* Arc colour matches the UUM classification legend (same hex as the legend dots). */
+function _arcColor(cgpa, p){
+  if(cgpa<=0)   return p.track;     // no grades yet → neutral track
+  if(cgpa<2.0)  return '#a8443a';   // Fail
+  if(cgpa<3.0)  return '#3f7d5a';   // Lower 2nd
+  if(cgpa<3.67) return '#3a6ea5';   // Upper 2nd
+  return '#b07a3f';                 // First Class
+}
 
 /* ─────────────────────── CGPA RING GAUGE ─────────────────────── */
 let _ringAnimVal=0,_ringAnimTarget=0,_ringAnimRAF=null;
@@ -45,23 +52,39 @@ function _drawRingGauge(cgpa){
   const START=-Math.PI/2;                 // 12 o'clock
   const frac=Math.max(0,Math.min(1,cgpa/4));
   const END=START+frac*Math.PI*2;
-  const col=_arcColor(_ringAnimTarget||cgpa,p);   /* colour by target, no red flash mid-sweep */
-
   /* full-circle track */
   ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2);
   ctx.strokeStyle=p.track; ctx.lineWidth=SW; ctx.stroke();
 
-  /* progress arc with soft glow — stronger glow for First Class */
+  /* progress arc — drawn in UUM classification zones (same hex as the legend) so as it
+     animates up it sweeps red → green → blue → gold according to the (current) CGPA. */
   if(frac>0.001){
-    const isFirstClass=(_ringAnimTarget||cgpa)>=3.67;
+    const ZONES=[
+      {to:2.0,  c:'#a8443a'},  // Fail
+      {to:3.0,  c:'#3f7d5a'},  // Lower 2nd
+      {to:3.67, c:'#3a6ea5'},  // Upper 2nd
+      {to:4.0,  c:'#b07a3f'}   // First Class
+    ];
     ctx.save();
-    ctx.shadowColor=col; ctx.shadowBlur=isFirstClass?(p.dark?46:28):(p.dark?22:10);
-    ctx.beginPath(); ctx.arc(CX,CY,R,START,END);
-    ctx.strokeStyle=col; ctx.lineWidth=SW; ctx.lineCap="round"; ctx.stroke();
-    if(isFirstClass){  /* double-draw to intensify glow */
-      ctx.shadowBlur=isFirstClass?18:8;
-      ctx.lineWidth=SW-4; ctx.stroke();
+    ctx.lineWidth=SW; ctx.lineCap="butt";
+    let from=0;
+    for(const z of ZONES){
+      const segEnd=Math.min(cgpa, z.to);
+      if(segEnd<=from){ from=z.to; continue; }
+      const a0=START+(from/4)*Math.PI*2, a1=START+(segEnd/4)*Math.PI*2;
+      const fc=(z.to===4.0);
+      ctx.shadowColor=z.c; ctx.shadowBlur=fc?(p.dark?42:24):(p.dark?12:7);
+      ctx.strokeStyle=z.c;
+      ctx.beginPath(); ctx.arc(CX,CY,R,a0,a1); ctx.stroke();
+      from=z.to;
+      if(segEnd>=cgpa) break;
     }
+    /* rounded leading tip (current zone) + rounded start dome (Fail red) */
+    ctx.shadowBlur=0; ctx.lineCap="round";
+    ctx.strokeStyle=_arcColor(cgpa,p);
+    ctx.beginPath(); ctx.arc(CX,CY,R, END-0.0001, END); ctx.stroke();
+    ctx.strokeStyle=ZONES[0].c;
+    ctx.beginPath(); ctx.arc(CX,CY,R, START, START+0.0001); ctx.stroke();
     ctx.restore();
   }
 
