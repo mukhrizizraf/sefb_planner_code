@@ -143,7 +143,7 @@ function isPrereqsMet(code, semester){
     let foundItem=null;
     for(let s=1;s<semester;s++){
       const it=(state.plan[s]||[]).find(x=>x.code===pre);
-      if(it){ foundItem=it; break; }
+      if(it){ foundItem=it; } // no break — keep scanning so the latest attempt wins
     }
     if(!foundItem){ missing.push(pre); continue; }
     if(foundItem.grade && FAIL_GRADES.has(foundItem.grade)){
