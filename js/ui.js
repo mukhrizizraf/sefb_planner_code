@@ -430,7 +430,14 @@ function renderAlerts(){
     for(const it of items){
       const pr=isPrereqsMet(it.code,s);
       if(!pr.ok) issues.push({lvl:"bad",msg:`${it.code} (Sem ${s}): missing ${pr.missing.join(", ")}`});
-      if(it.grade && FAIL_GRADES.has(it.grade)) issues.push({lvl:"warn",msg:`${it.code} (Sem ${s}): ${it.grade} — retake required (UUM rule c)`});
+      if(it.grade && FAIL_GRADES.has(it.grade)){
+        // Suppress if the course was already retaken with a passing grade in a later semester.
+        let retaken=false;
+        for(let s2=s+1;s2<=totalSems();s2++){
+          if((state.plan[s2]||[]).some(x=>x.code===it.code && x.grade && !FAIL_GRADES.has(x.grade))){ retaken=true; break; }
+        }
+        if(!retaken) issues.push({lvl:"warn",msg:`${it.code} (Sem ${s}): ${it.grade} — retake required (UUM rule c)`});
+      }
     }
   }
   const visible=issues.filter(i=>!state.dismissedAlerts.includes(alertHash(i.msg)));
