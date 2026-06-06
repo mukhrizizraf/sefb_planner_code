@@ -297,6 +297,7 @@ function loadRecommended(){
     if(p.fFields && p.fFields.length && state.fieldId){ substituteFieldCourses(state.fieldId); }
     /* Recommended plans are built for Path 2. Fix English course placement for other paths. */
     substitutePathCourses();
+    state.alertsMuted=false; state.dismissedAlerts=[];
     saveState(); renderAll();
     toast("Recommended plan loaded.");
   });
@@ -397,7 +398,8 @@ function substituteFieldCourses(toFieldId){
 }
 function resetPlan(){
   showConfirm("Reset your plan? This cannot be undone.", ()=>{
-    state.plan=emptyPlan(); saveState(); renderAll();
+    state.plan=emptyPlan(); state.alertsMuted=false; state.dismissedAlerts=[];
+    saveState(); renderAll();
     toast("Plan reset.");
   });
 }
