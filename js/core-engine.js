@@ -302,10 +302,8 @@ function loadRecommended(){
   });
 }
 /* Fix English-pathway course placement after loading a recommended plan.
-   The embedded plans are Path 2 (MPB2013 Sem1, MPB3013 Sem2).
-   For Path 1 we need MPB1013→MPB2013→MPB3013 in three sequential semesters.
-   For Path 3 remove MPB2013 (student adds their ESP choice manually).
-   For Exempted remove all MPB courses. */
+   Recommended plans are Path 2 (MPB2013 Sem1, MPB3013 Sem2).
+   Path 1 needs MPB1013→MPB2013→MPB3013 across three sequential semesters. */
 function substitutePathCourses(){
   const pid=state.pathId;
   if(!pid || pid==="L2") return;
@@ -316,24 +314,59 @@ function substitutePathCourses(){
     }
     return -1;
   };
+  const semCr=(s)=>(state.plan[s]||[]).reduce((t,it)=>{const c=getCourse(it.code);return t+(c?c.cr:0);},0);
+  const lastRealSem=()=>totalSems()-1; /* skip final industrial-training sem */
 
   if(pid==="L1"){
-    const s2=semOf("MPB2013"), s3=semOf("MPB3013");
-    if(s2<1) return;
-    /* Step 1: swap MPB2013 → MPB1013 in its semester (net 0 credits) */
-    state.plan[s2]=(state.plan[s2]||[]).map(it=>it.code==="MPB2013"?{code:"MPB1013",grade:""}:it);
-    if(s3>0){
-      /* Step 2: add MPB2013 before MPB3013's semester, remove MPB3013 (net 0 credits) */
-      state.plan[s3]=[{code:"MPB2013",grade:""},...(state.plan[s3]||[]).filter(it=>it.code!=="MPB3013")];
-      /* Step 3: place MPB3013 in the next semester (may go slightly over 20cr — advisory only) */
-      const target=Math.min(s3+1,totalSems());
-      state.plan[target]=state.plan[target]||[];
-      state.plan[target].unshift({code:"MPB3013",grade:""});
+    const sA=semOf("MPB2013"), sB=semOf("MPB3013");
+    if(sA<1) return;
+    /* Step 1: Sem A — swap MPB2013 → MPB1013 (net 0 cr) */
+    state.plan[sA]=(state.plan[sA]||[]).map(it=>it.code==="MPB2013"?{code:"MPB1013",grade:""}:it);
+    if(sB>0){
+      /* Step 2: Sem B — swap MPB3013 → MPB2013 (net 0 cr) */
+      state.plan[sB]=(state.plan[sB]||[]).map(it=>it.code==="MPB3013"?{code:"MPB2013",grade:""}:it);
+      /* Step 3: find a home for MPB3013 in the first eligible semester C > sB.
+         Eligible = after moving any MPB3013-dependents out, semCr(C)+3 ≤ 20.
+         If no eligible sem found, use the lightest real semester. */
+      let placed=false;
+      for(let sC=sB+1;sC<=lastRealSem();sC++){
+        /* find courses in sC that require MPB3013 — they must move out first */
+        const deps=(state.plan[sC]||[]).filter(it=>{
+          const c=getCourse(it.code); return c&&(c.pre||[]).includes("MPB3013");
+        });
+        const depCr=deps.reduce((t,it)=>{const c=getCourse(it.code);return t+(c?c.cr:0);},0);
+        if(semCr(sC)-depCr+3 <= 20){
+          /* move each MPB3013-dependent to the earliest later semester with room */
+          deps.forEach(dep=>{
+            state.plan[sC]=(state.plan[sC]||[]).filter(it=>it.code!==dep.code);
+            let moved=false;
+            for(let ss=sC+1;ss<=lastRealSem();ss++){
+              if(semCr(ss)<20){ state.plan[ss]=(state.plan[ss]||[]); state.plan[ss].push(dep); moved=true; break; }
+            }
+            if(!moved){
+              /* no room anywhere — put in lightest real sem after sC */
+              let minS=sC+1,minC=999;
+              for(let ss=sC+1;ss<=lastRealSem();ss++){const cr=semCr(ss);if(cr<minC){minC=cr;minS=ss;}}
+              state.plan[minS]=(state.plan[minS]||[]);
+              state.plan[minS].push(dep);
+            }
+          });
+          state.plan[sC]=(state.plan[sC]||[]);
+          state.plan[sC].unshift({code:"MPB3013",grade:""});
+          placed=true; break;
+        }
+      }
+      if(!placed){
+        /* all real sems are full — use the lightest one anyway */
+        let minS=sB+1,minC=999;
+        for(let ss=sB+1;ss<=lastRealSem();ss++){const cr=semCr(ss);if(cr<minC){minC=cr;minS=ss;}}
+        state.plan[minS]=(state.plan[minS]||[]);
+        state.plan[minS].unshift({code:"MPB3013",grade:""});
+      }
     }
     return;
   }
   if(pid==="L3"){
-    /* Path 3 doesn't need MPB2013; student picks their ESP from the add-course dropdown */
     const s2=semOf("MPB2013");
     if(s2>0) state.plan[s2]=(state.plan[s2]||[]).filter(it=>it.code!=="MPB2013");
     return;
