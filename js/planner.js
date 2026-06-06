@@ -52,7 +52,7 @@ function renderSemesters(){
           <h3 class="sem-title">${isExtra?"Extension "+s:"Semester "+s}${s===currentSem?' <span class="sem-now">Current</span>':""}</h3>
         </div>
         <div class="sem-head-right">
-          ${items.length?`<button class="btn-deans sem-head-deans" onclick="simulateDeansList(${s})">🎉 Simulate a Dean's List semester for me!</button>`:""}
+          ${items.length?`<button class="btn-deans sem-head-deans" onclick="simulateDeansList(${s})"><span class="deans-full">🎉 Simulate a Dean's List semester for me!</span><span class="deans-short">🎉 Dean's List</span></button>`:""}
           <select class="sem-session" title="Academic session" aria-label="Academic session for ${isExtra?'extension '+s:'semester '+s}" onchange="setSemSession(${s},this.value)">
             <option value="">Session…</option>${sessOpts}
           </select>

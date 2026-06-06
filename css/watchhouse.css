@@ -347,6 +347,7 @@ select:focus-visible,.input:focus-visible{outline:2px solid var(--amber-deep);ou
   color:var(--amber-deep);border:1px solid var(--amber);padding:3px 9px;border-radius:var(--pill)}
 .sem-head-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
 .sem-head-deans{white-space:nowrap;padding:9px 16px;font-size:11.5px;letter-spacing:.04em}
+.deans-short{display:none}
 .sem-session{width:auto;min-width:108px;padding:9px 34px 9px 12px;font-size:12px}
 .sem-gpa{text-align:right}
 .sem-gpa-lbl{display:block;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--warm)}
@@ -555,6 +556,33 @@ body.dark-mode .switch::after{transform:translateX(26px);background:#fff}
   .brand-sub{display:none}
   .calc-result .big{font-size:46px}
   body{font-size:14px}
+
+  /* Planner: Programme Setup → single column */
+  .planner-setup-grid{grid-template-columns:1fr}
+  .planner-setup-grid .field:first-child{grid-column:auto}
+
+  /* Dean's List button: short label on mobile */
+  .deans-full{display:none}
+  .deans-short{display:inline}
+
+  /* Course row: 2-row grid layout so title gets its own full line */
+  .course-row{
+    display:grid;
+    grid-template-columns:6px 1fr auto;
+    grid-template-rows:auto auto;
+    column-gap:8px;row-gap:4px;
+    padding:10px 8px;
+    margin:0 -8px;
+    cursor:pointer;
+  }
+  .course-cat{grid-column:1;grid-row:1/3;align-self:stretch;border-radius:3px}
+  .course-body{grid-column:2/4;grid-row:1;min-width:0}
+  .course-code{grid-column:2;grid-row:2;font-size:10.5px;min-width:0;align-self:center}
+  .course-tail{grid-column:3;grid-row:2;align-self:center;gap:6px}
+  .course-cr{display:none}
+  .grade-sel{width:58px;padding:5px 18px 5px 8px;font-size:12px}
+  .row-x{width:24px;height:24px}
+  .row-x .ic{width:14px;height:14px}
 }
 
 /* ============================================================================
