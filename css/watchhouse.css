@@ -490,6 +490,18 @@ body.dark-mode .switch::after{transform:translateX(26px);background:#fff}
 .confirm-card{max-width:440px;text-align:center;padding:34px 30px}
 .confirm-card p{font-size:16px;margin-bottom:24px}
 .confirm-actions{display:flex;gap:12px;justify-content:center}
+/* Rich load-recommended variant */
+.confirm-card.is-rich{max-width:560px;text-align:left}
+.confirm-card.is-rich p{margin:0}
+.cr-icon{width:54px;height:54px;border-radius:50%;border:2px solid var(--amber);display:grid;place-items:center;margin-bottom:18px}
+.cr-bang{font-size:22px;font-weight:700;color:var(--amber);line-height:1}
+.cr-title{font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.2}
+.cr-sub{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:14px}
+.cr-list{list-style:disc;padding:14px 16px 14px 34px;background:var(--charcoal);color:var(--on-dark);margin:0 0 14px;font-size:13.5px;line-height:1.65}
+.cr-list li{margin-bottom:3px}
+.cr-list li:last-child{margin-bottom:0}
+.cr-foot{font-size:12px;color:var(--sub);margin-bottom:22px}
+.confirm-card.is-rich .confirm-actions{justify-content:flex-start}
 #toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,18px);z-index:90;
   background:var(--charcoal);color:var(--on-dark);padding:13px 22px;font-size:13px;letter-spacing:.02em;
   border:1px solid var(--charcoal);opacity:0;pointer-events:none;transition:.35s var(--ease)}

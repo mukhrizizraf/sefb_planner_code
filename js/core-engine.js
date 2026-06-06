@@ -290,7 +290,7 @@ function loadRecommended(){
   const p=PROGRAMS[state.programId];
   const rec=p.recommended && p.recommended[state.trackId||""];
   if(!rec){ toast("No recommended plan available for this program."); return; }
-  showConfirm("Replace your current plan with the official recommended plan?", ()=>{
+  showLoadConfirm(()=>{
     state.plan=emptyPlan();
     Object.entries(rec).forEach(([s,codes])=>{ state.plan[s]=codes.map(c=>({code:c,grade:""})); });
     if(state.langId && state.langId !== "MAN"){ substituteLangCourses("MAN", state.langId); }
@@ -488,10 +488,52 @@ function showConfirm(msg, onOk){
   setTimeout(()=>_moveFocusToModal(d), 10);
 }
 function confirmResolve(ok){
-  const d=$("confirmDialog"); if(d) d.classList.remove("active");
+  const d=$("confirmDialog");
+  if(d){
+    d.classList.remove("active");
+    const card=d.querySelector(".confirm-card");
+    if(card) card.classList.remove("is-rich");
+    const msg=$("confirmMsg"); if(msg) msg.innerHTML="";
+  }
   if(ok && _confirmCallback) _confirmCallback();
   _confirmCallback=null;
   _restoreFocus();
+}
+
+function showLoadConfirm(onOk){
+  const d=$("confirmDialog");
+  if(!d){ if(window.confirm("Load recommended plan?")) onOk&&onOk(); return; }
+  const p=PROGRAMS[state.programId];
+  const pathLabels={L1:"Path 1 — 9 credits (MUET 1.0–2.5)",L2:"Path 2 — 6 credits (MUET 3.0–3.5)",L3:"Path 3 — 6 credits (MUET 4.0–4.5)",EX:"Exempted (MUET 5.0+)"};
+  const langLabels={MAN:"Mandarin",ARA:"Arabic",JPN:"Japanese",FRA:"French",KOR:"Korean",OTH:"Other Foreign Language"};
+  const items=[];
+  items.push(`Programme: ${p.name}.`);
+  if(p.tracks && p.tracks.length && state.trackId){
+    const t=p.tracks.find(tr=>tr.id===state.trackId);
+    if(t) items.push(`Specialization track: ${t.en}.`);
+  }
+  if(p.fFields && p.fFields.length && state.fieldId){
+    const f=p.fFields.find(ff=>ff.id===state.fieldId);
+    if(f) items.push(`Field elective: ${f.en}.`);
+  }
+  items.push(`English pathway: ${pathLabels[state.pathId]||state.pathId}.`);
+  if(p.courses.some(c=>c.cat==="D" && c.lang)){
+    items.push(`Foreign language: ${langLabels[state.langId]||state.langId}.`);
+  }
+  items.push("Grades will stay blank; enter grades after results.");
+  items.push("Semester loads may be rebalanced if the recommended structure exceeds the credit limit.");
+  const card=d.querySelector(".confirm-card");
+  if(card) card.classList.add("is-rich");
+  $("confirmMsg").innerHTML=`
+    <div class="cr-icon"><span class="cr-bang">!</span></div>
+    <div class="cr-title">Load recommended plan?</div>
+    <div class="cr-sub">This will replace the current plan saved in this browser.</div>
+    <ul class="cr-list">${items.map(i=>`<li>${i}</li>`).join("")}</ul>
+    <div class="cr-foot">Use Cancel if you still need the current custom plan.</div>`;
+  _modalTrigger=document.activeElement;
+  d.classList.add("active");
+  _confirmCallback=onOk;
+  setTimeout(()=>_moveFocusToModal(d),10);
 }
 
 let _toastTimer=null;
