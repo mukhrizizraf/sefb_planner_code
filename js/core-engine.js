@@ -507,7 +507,7 @@ function showLoadConfirm(onOk){
   const pathLabels={L1:"Path 1 — 9 credits (MUET 1.0–2.5)",L2:"Path 2 — 6 credits (MUET 3.0–3.5)",L3:"Path 3 — 6 credits (MUET 4.0–4.5)",EX:"Exempted (MUET 5.0+)"};
   const langLabels={MAN:"Mandarin",ARA:"Arabic",JPN:"Japanese",FRA:"French",KOR:"Korean",OTH:"Other Foreign Language"};
   const items=[];
-  items.push(`Programme: ${p.name}.`);
+  items.push(`Programme: ${p.nameEn}.`);
   if(p.tracks && p.tracks.length && state.trackId){
     const t=p.tracks.find(tr=>tr.id===state.trackId);
     if(t) items.push(`Specialization track: ${t.en}.`);
