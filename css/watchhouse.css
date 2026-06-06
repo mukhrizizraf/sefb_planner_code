@@ -317,7 +317,7 @@ select:focus-visible,.input:focus-visible{outline:2px solid var(--amber-deep);ou
 
 /* ─────────────────────── TAKE NOTE (alerts) ─────────────────────── */
 .take-note{border:2px solid var(--amber);background:color-mix(in srgb,var(--amber) 12%,var(--surface));
-  padding:clamp(16px,2.2vw,22px) clamp(18px,2.4vw,24px);margin-top:26px}
+  padding:clamp(16px,2.2vw,22px) clamp(18px,2.4vw,24px);margin-bottom:24px}
 .take-note.muted{opacity:.6}
 .alert-clear{font-size:13px;color:var(--sub);padding-top:2px}
 .muted-msg{font-style:italic}

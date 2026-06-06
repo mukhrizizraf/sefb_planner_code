@@ -107,18 +107,6 @@
     </div>
   </div>
 
-  <!-- TAKE NOTE -->
-  <div class="take-note" id="takeNotePanel">
-    <div class="take-note-head">
-      <span class="ic" style="color:var(--amber-deep)" data-icon="warn"></span>
-      <span class="tn-title">Take Note</span>
-      <span class="tn-count" id="takeNoteCount">0</span>
-      <span class="spacer"></span>
-      <button class="tn-mute" id="takeNoteMute" onclick="toggleAlertsMute()">Mute</button>
-    </div>
-    <div id="alerts"></div>
-  </div>
-
   <!-- SEMESTER STACK -->
   <section class="section">
     <div class="section-head">
@@ -128,6 +116,17 @@
     <div class="panel" style="margin-bottom:20px;padding:clamp(14px,2vw,20px)">
       <p class="eyebrow" style="margin-bottom:0">Component Colours — the bar beside each course shows its category</p>
       <div class="cat-legend" id="catLegend"></div>
+    </div>
+    <!-- TAKE NOTE -->
+    <div class="take-note" id="takeNotePanel">
+      <div class="take-note-head">
+        <span class="ic" style="color:var(--amber-deep)" data-icon="warn"></span>
+        <span class="tn-title">Take Note</span>
+        <span class="tn-count" id="takeNoteCount">0</span>
+        <span class="spacer"></span>
+        <button class="tn-mute" id="takeNoteMute" onclick="toggleAlertsMute()">Mute</button>
+      </div>
+      <div id="alerts"></div>
     </div>
     <div class="sem-stack" id="semesters"></div>
   </section>
