@@ -384,16 +384,39 @@ function substitutePathCourses(){
 function substituteFieldCourses(toFieldId){
   const p=PROGRAMS[state.programId];
   if(!p.fFields || !p.fFields.length) return;
+  const fieldCodes=new Set(p.courses.filter(c=>c.cat==="F" && c.field===toFieldId).map(c=>c.code));
   const queue=p.courses.filter(c=>c.cat==="F" && c.field===toFieldId).sort((a,b)=>a.code.localeCompare(b.code));
-  let qi=0;
+  // Collect field slots grouped by semester
+  const slotsBySem={};
   for(let s=1;s<=totalSems();s++){
-    const items=state.plan[s]||[];
-    items.forEach((it,idx)=>{
+    (state.plan[s]||[]).forEach((it,idx)=>{
       const c=getCourse(it.code);
-      if(c && c.cat==="F" && c.field){
-        if(qi<queue.length){ items[idx]={code:queue[qi].code, grade:it.grade||""}; qi++; }
-      }
+      if(c && c.cat==="F" && c.field){ if(!slotsBySem[s]) slotsBySem[s]=[]; slotsBySem[s].push({idx,grade:it.grade||""}); }
     });
+  }
+  const sems=Object.keys(slotsBySem).map(Number).sort((a,b)=>a-b);
+  const placed=new Map(); // code -> semNum
+  for(const course of queue){
+    // Minimum semester: one after the latest same-field prereq
+    const fieldPreSems=(course.pre||[]).filter(pre=>fieldCodes.has(pre)&&placed.has(pre)).map(pre=>placed.get(pre));
+    const minSem=fieldPreSems.length?Math.max(...fieldPreSems)+1:1;
+    let assigned=false;
+    for(const s of sems){
+      if(s>=minSem && slotsBySem[s]?.length){
+        const slot=slotsBySem[s].shift();
+        state.plan[s][slot.idx]={code:course.code,grade:slot.grade};
+        placed.set(course.code,s); assigned=true; break;
+      }
+    }
+    if(!assigned){ // fallback: any remaining slot
+      for(const s of sems){
+        if(slotsBySem[s]?.length){
+          const slot=slotsBySem[s].shift();
+          state.plan[s][slot.idx]={code:course.code,grade:slot.grade};
+          placed.set(course.code,s); break;
+        }
+      }
+    }
   }
 }
 function resetPlan(){
