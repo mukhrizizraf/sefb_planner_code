@@ -317,9 +317,10 @@ select:focus-visible,.input:focus-visible{outline:2px solid var(--amber-deep);ou
 
 /* ─────────────────────── TAKE NOTE (alerts) ─────────────────────── */
 .take-note{border:2px solid var(--amber);background:color-mix(in srgb,var(--amber) 12%,var(--surface));
-  padding:clamp(16px,2.2vw,22px) clamp(18px,2.4vw,24px);margin-top:26px;display:none}
-.take-note.has-alerts{display:block}
-.take-note.muted{opacity:.7}
+  padding:clamp(16px,2.2vw,22px) clamp(18px,2.4vw,24px);margin-top:26px}
+.take-note.muted{opacity:.6}
+.alert-clear{font-size:13px;color:var(--sub);padding-top:2px}
+.muted-msg{font-style:italic}
 .take-note-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .take-note-head .tn-title{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--amber-deep)}
 .tn-count{background:var(--amber-deep);color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;

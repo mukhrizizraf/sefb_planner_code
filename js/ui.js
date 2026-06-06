@@ -434,17 +434,23 @@ function renderAlerts(){
     }
   }
   const visible=issues.filter(i=>!state.dismissedAlerts.includes(alertHash(i.msg)));
+  panel.style.display=""; /* always visible */
   if(state.alertsMuted){
     panel.classList.remove("has-alerts"); panel.classList.add("muted");
-    if(a) a.innerHTML=""; if(countEl) countEl.textContent=visible.length;
-    if(muteBtn) muteBtn.textContent="Muted — enable";
-    panel.style.display = (visible.length||issues.length)?"":"none";
+    if(countEl) countEl.textContent=issues.length||"";
+    if(muteBtn) muteBtn.textContent="Unmute";
+    if(a) a.innerHTML=`<div class="alert-clear muted-msg">Alerts muted — ${issues.length?issues.length+" issue"+(issues.length>1?"s":"")+" hidden":"no issues"}.</div>`;
     return;
   }
   panel.classList.remove("muted");
   if(muteBtn) muteBtn.textContent="Mute";
-  if(!visible.length){ panel.classList.remove("has-alerts"); panel.style.display="none"; if(a) a.innerHTML=""; return; }
-  panel.classList.add("has-alerts"); panel.style.display="";
+  if(!visible.length){
+    panel.classList.remove("has-alerts");
+    if(countEl) countEl.textContent="";
+    if(a) a.innerHTML=`<div class="alert-clear">✓ No prerequisite or credit issues found.</div>`;
+    return;
+  }
+  panel.classList.add("has-alerts");
   if(countEl) countEl.textContent=visible.length;
   if(a) a.innerHTML=visible.slice(0,8).map(i=>{
     const h=alertHash(i.msg);
