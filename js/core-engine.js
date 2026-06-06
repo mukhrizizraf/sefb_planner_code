@@ -151,7 +151,7 @@ function isPrereqsMet(code, semester){
     }
   }
   if(c.minCr){ const have=creditsBefore(semester); if(have<c.minCr) missing.push(`${c.minCr}cr min (have ${have})`); }
-  if(c.all){ const have=creditsBefore(semester); const p=PROGRAMS[state.programId]; if(have<p.total-c.cr) missing.push(`finish other courses first`);}
+  if(c.all){ const have=creditsBefore(semester); const p=PROGRAMS[state.programId]; const pathAdj={L3:3,EX:6}[state.pathId]||0; if(have<p.total-c.cr-pathAdj) missing.push(`finish other courses first`);}
   if(c.offer && c.offer!=="both"){
     const isOdd = semester % 2 === 1;
     const wantOdd = c.offer==="odd";
