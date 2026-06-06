@@ -101,6 +101,10 @@ function renderSemesters(){
             <option value="">—</option>
             ${GRADES.map(g=>`<option value="${g.g}" ${it.grade===g.g?'selected':''}>${g.g}</option>`).join("")}
           </select>
+          <select class="move-sel" onchange="moveCourse(${s},${idx},+this.value)" onclick="event.stopPropagation()" title="Move to another semester" aria-label="Move ${cc.code} to another semester">
+            <option value="">Move…</option>
+            ${Array.from({length:totalSems()},(_,i)=>i+1).filter(n=>n!==s).map(n=>`<option value="${n}">Sem ${n}</option>`).join("")}
+          </select>
           <button class="row-x" onclick="event.stopPropagation();removeCourse(${s},${idx})" title="Remove" aria-label="Remove ${cc.code} ${cc.en}">${icon("close")}</button>
         </div>`;
       list.appendChild(row);
@@ -244,6 +248,13 @@ function attachDragHandlers(){
 
 function addCourse(s){ const sel=$(`addSel-${s}`); if(!sel||!sel.value) return; state.plan[s].push({code:sel.value,grade:""}); saveState(); renderAll(); }
 function removeCourse(s,i){ state.plan[s].splice(i,1); saveState(); renderAll(); }
+function moveCourse(fromSem,idx,toSem){
+  if(!toSem||toSem===fromSem) return;
+  const item=state.plan[fromSem].splice(idx,1)[0];
+  if(!state.plan[toSem]) state.plan[toSem]=[];
+  state.plan[toSem].push(item);
+  saveState(); renderAll();
+}
 function setSemSession(s,v){ state.semSession[s]=v; saveState(); safe("renderSemesters"); safe("renderMilestone"); }
 function setGrade(s,i,g){ state.plan[s][i].grade=g; saveState(); renderAll(); }
 
