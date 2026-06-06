@@ -294,11 +294,56 @@ function loadRecommended(){
     state.plan=emptyPlan();
     Object.entries(rec).forEach(([s,codes])=>{ state.plan[s]=codes.map(c=>({code:c,grade:""})); });
     if(state.langId && state.langId !== "MAN"){ substituteLangCourses("MAN", state.langId); }
-    /* fill in the field elective the student chose in the toolbar (programmes with fFields) */
     if(p.fFields && p.fFields.length && state.fieldId){ substituteFieldCourses(state.fieldId); }
+    /* Recommended plans are built for Path 2. Fix English course placement for other paths. */
+    substitutePathCourses();
     saveState(); renderAll();
     toast("Recommended plan loaded.");
   });
+}
+/* Fix English-pathway course placement after loading a recommended plan.
+   The embedded plans are Path 2 (MPB2013 Sem1, MPB3013 Sem2).
+   For Path 1 we need MPB1013→MPB2013→MPB3013 in three sequential semesters.
+   For Path 3 remove MPB2013 (student adds their ESP choice manually).
+   For Exempted remove all MPB courses. */
+function substitutePathCourses(){
+  const pid=state.pathId;
+  if(!pid || pid==="L2") return;
+
+  const semOf=(code)=>{
+    for(let s=1;s<=totalSems();s++){
+      if((state.plan[s]||[]).some(it=>it.code===code)) return s;
+    }
+    return -1;
+  };
+
+  if(pid==="L1"){
+    const s2=semOf("MPB2013"), s3=semOf("MPB3013");
+    if(s2<1) return;
+    /* Step 1: swap MPB2013 → MPB1013 in its semester (net 0 credits) */
+    state.plan[s2]=(state.plan[s2]||[]).map(it=>it.code==="MPB2013"?{code:"MPB1013",grade:""}:it);
+    if(s3>0){
+      /* Step 2: add MPB2013 before MPB3013's semester, remove MPB3013 (net 0 credits) */
+      state.plan[s3]=[{code:"MPB2013",grade:""},...(state.plan[s3]||[]).filter(it=>it.code!=="MPB3013")];
+      /* Step 3: place MPB3013 in the next semester (may go slightly over 20cr — advisory only) */
+      const target=Math.min(s3+1,totalSems());
+      state.plan[target]=state.plan[target]||[];
+      state.plan[target].unshift({code:"MPB3013",grade:""});
+    }
+    return;
+  }
+  if(pid==="L3"){
+    /* Path 3 doesn't need MPB2013; student picks their ESP from the add-course dropdown */
+    const s2=semOf("MPB2013");
+    if(s2>0) state.plan[s2]=(state.plan[s2]||[]).filter(it=>it.code!=="MPB2013");
+    return;
+  }
+  if(pid==="EX"){
+    const mpb=new Set(["MPB1013","MPB2013","MPB3013"]);
+    for(let s=1;s<=totalSems();s++){
+      if(state.plan[s]) state.plan[s]=state.plan[s].filter(it=>!mpb.has(it.code));
+    }
+  }
 }
 /* Replace every F-cat field-elective slot in the loaded plan with the chosen field's
    courses (in code order, which keeps foundation→advanced prerequisite order). */
