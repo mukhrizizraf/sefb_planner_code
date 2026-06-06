@@ -63,7 +63,8 @@ let state = {
   pathId:"L2",
   langId:"MAN",
   fieldId:"",          // chosen field elective (programmes with fFields, e.g. BECONS)
-  extraSems:0
+  extraSems:0,
+  alertsMuted:true     // Take Note muted by default; user opts in via Unmute
 };
 
 function totalSems(){ const p=PROGRAMS[state.programId]; return (p?.semCount||8) + (state.extraSems||0); }
@@ -98,7 +99,7 @@ function loadState(){
   if(typeof state.extraSems!=="number") state.extraSems=0;
   if(!state.lastSaved) state.lastSaved=Date.now();
   if(!Array.isArray(state.dismissedAlerts)) state.dismissedAlerts=[];
-  if(typeof state.alertsMuted!=="boolean") state.alertsMuted=false;
+  if(typeof state.alertsMuted!=="boolean") state.alertsMuted=true;
   if(!state.semSession||typeof state.semSession!=="object"||Array.isArray(state.semSession)) state.semSession={};
   applyTheme(state.theme);
 }
@@ -297,7 +298,7 @@ function loadRecommended(){
     if(p.fFields && p.fFields.length && state.fieldId){ substituteFieldCourses(state.fieldId); }
     /* Recommended plans are built for Path 2. Fix English course placement for other paths. */
     substitutePathCourses();
-    state.alertsMuted=false; state.dismissedAlerts=[];
+    state.alertsMuted=true; state.dismissedAlerts=[];
     saveState(); renderAll();
     toast("Recommended plan loaded.");
   });
@@ -421,7 +422,7 @@ function substituteFieldCourses(toFieldId){
 }
 function resetPlan(){
   showConfirm("Reset your plan? This cannot be undone.", ()=>{
-    state.plan=emptyPlan(); state.alertsMuted=false; state.dismissedAlerts=[];
+    state.plan=emptyPlan(); state.alertsMuted=true; state.dismissedAlerts=[];
     saveState(); renderAll();
     toast("Plan reset.");
   });
