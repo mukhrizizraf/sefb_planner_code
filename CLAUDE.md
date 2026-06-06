@@ -112,8 +112,9 @@ fallback), `annotate_help.py` (2x base screenshots → balloon/pin help-step ima
    - Left (`span-7`): Programme Setup — `programSelect`, `trackSelect`, `pathSelect`, `langSelect`, `langSelectSpecific` in a 2-col `.planner-setup-grid` + context chips below
    - Right (`span-5`): Actions panel (Load Recommended, Export PDF, Reset Plan — full-width stacked buttons) + Find a Course search panel below it
 3. `img-strip` (focus-studio.webp)
-4. Take Note alert panel
-5. Semester Stack
+4. Semester Stack section — section head, **Component Colours** legend (`#catLegend`), then the **Take Note** alert panel (sits *between* the legend and Semester 1), then the semester cards (`#semesters`)
+
+**Take Note panel** (`#takeNotePanel`, `renderAlerts` in ui.js): **always visible** (no `display:none` on `.take-note` except print). States: clean ("✓ No prerequisite or credit issues found."), active (list of `.alert` rows with dismiss ✕), muted ("Alerts muted — N issues hidden." + Unmute button). **Muted by default** (`state.alertsMuted` defaults `true`; Load Recommended & Reset Plan re-mute). Each course row also has a **Move…** dropdown (`moveCourse(fromSem, idx, toSem)`) beside the grade select for relocating a course without drag-drop. The retake-required alert self-suppresses once the same course code has a passing grade in a later semester (the RETAKE pill on the failed row stays — historical record).
 
 ### analytics.html (CGPA Simulation)
 - GPA Trajectory bar chart (draw-on animation) + CGPA trend sparkline + GPA table
@@ -183,10 +184,12 @@ This fix is **also applied to `SEFB_Dashboard.html`** (the legacy single-page da
 ## Prerequisite engine (core-engine.js — isPrereqsMet)
 
 Four checks in order:
-1. **Course-code prereqs** — must appear in an earlier semester. B-cat English courses outside the chosen pathway are auto-exempted.
+1. **Course-code prereqs** — must appear in an earlier semester. B-cat English courses outside the chosen pathway are auto-exempted. The prereq-scan loop does **not** `break` on first match — it keeps scanning so the **latest attempt wins** (a passing retake in a later semester overrides an earlier failed attempt).
 2. **Pass-grade enforcement** — prereq graded in `FAIL_GRADES = {C-, D+, D, F}` counts as not satisfied.
 3. **Minimum credits** — `c.minCr` requires `creditsBefore(semester) >= c.minCr`.
 4. **Semester offering** — `c.offer = "odd" | "even"` restricts placement to matching semesters.
+
+`c.all` (capstone/Industrial Training) requires nearly all other credits first: `creditsBefore >= p.total - c.cr - pathAdj`, where `pathAdj = {L3:3, EX:6}` accounts for the credits a shorter English pathway removes (otherwise IT locks on Path 3 / Exempted).
 
 Lock indicators in add-dropdown: `● Odd/Even sems only · ✕ Prereq failed · 🔒 generic`.
 
@@ -306,8 +309,21 @@ Programmes with `fFields` get a **"Field Elective" dropdown** (`renderFieldSelec
 `renderTrackSelect`; `#fieldSelect`/`#fieldField` in planner/settings/courselist setup). The student picks the
 field **first** (`state.fieldId`); it drives `availableFor`, the Course List F-cat filter, and **Load Recommended**
 (`substituteFieldCourses(state.fieldId)` swaps the recommended plan's default-field slots for the chosen field's
-courses, in code order). Tracks (BFIN/BBANK) work the same way via `state.trackId`. No two-step modal — field is
+courses). Tracks (BFIN/BBANK) work the same way via `state.trackId`. No two-step modal — field is
 chosen in the toolbar like a track.
+
+`substituteFieldCourses` is **prereq-aware**: it collects the F-cat slots by semester, then places each field
+course (code order) into the earliest slot that comes **after** all its same-field prereqs — so a field with a
+chain (e.g. BECONS Finance: BWFFK2033→BWFFK2043→…) never lands a course before its prereq. The BECONS recommended
+plan slot distribution was tuned to `1@Sem3, 1@Sem4, 1@Sem5, 3@Sem6` and FREE3013 moved to Sem 3 so no semester
+exceeds 20 cr (BEEZK3996 Academic Project is **6 cr**, not 3).
+
+### Load Recommended confirm dialog (`showLoadConfirm` in core-engine.js)
+Rich styled popup (not the plain `showConfirm`): amber `!` circle, "Load recommended plan?" title, warning
+subtitle, and a dark inner box (`.cr-list`) listing the current Programme (`p.nameEn`), Track/Field, English
+pathway, Foreign language, plus caveats (grades blank, loads may rebalance). Built dynamically from `state`; the
+`.confirm-card.is-rich` class is added/removed in `confirmResolve`. Reuses the same `#confirmDialog`/`_confirmCallback`
+plumbing as `showConfirm`.
 
 ## Dean's List simulator (core-engine.js)
 
