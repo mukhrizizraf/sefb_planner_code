@@ -277,10 +277,12 @@ body.drawer-open .drawer{transform:translateX(0)}
 .progress-row-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
 .pr-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
 .pr-val{font-size:13px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
-.progress-track{height:2px;background:var(--line)}
+.progress-track{height:2px;background:var(--line);position:relative}
 .progress-fill{height:100%;background:var(--ink);transition:width .6s var(--ease)}
+.progress-fill.is-planned{background:var(--sub);opacity:.35;position:absolute;top:0;transition:width .6s var(--ease)}
 .progress-row.is-done .progress-fill{background:var(--amber-deep)}
 .progress-row.is-done .pr-val{color:var(--amber-deep)}
+.pr-inprog{font-size:10px;font-weight:500;color:var(--sub);margin-left:4px;font-style:italic}
 
 /* ─────────────────────── BADGES ─────────────────────── */
 .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:clamp(12px,2vw,18px)}

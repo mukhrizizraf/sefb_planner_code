@@ -203,38 +203,49 @@ function classOf4(g){
 }
 const _RING_MEDALS = {first:"●", upper:"●", lower:"●", fail:"○"};
 
-/* total placed credits (any course in the plan, graded or not) */
-function plannedCredits(){
-  let t=0;
-  for(const arr of Object.values(state.plan)) for(const it of arr){
-    const c=getCourse(it.code); if(c) t+=c.cr;
-  }
-  return t;
-}
-/* total PASSED credits (graded with a non-failing grade) — used for graduation eligibility */
-function passedCredits(){
-  let t=0;
+/* Deduplicated course status map: for each unique course code, the best
+   outcome across all semesters — passed > planned > failed.
+   Prevents retakes from inflating the graduation credit total. */
+function _courseStatusMap(){
+  const map=new Map(); // code → {cr, status:'passed'|'planned'|'failed'}
   for(const arr of Object.values(state.plan)) for(const it of arr){
     const c=getCourse(it.code); if(!c) continue;
-    if(it.grade && !FAIL_GRADES.has(it.grade)) t+=c.cr;
+    const status=!it.grade?'planned':FAIL_GRADES.has(it.grade)?'failed':'passed';
+    const prev=map.get(it.code);
+    if(!prev||status==='passed'||(status==='planned'&&prev.status==='failed'))
+      map.set(it.code,{cr:c.cr,status});
   }
+  return map;
+}
+/* total placed credits — excludes failed-only courses; deduplicates retakes */
+function plannedCredits(){
+  let t=0;
+  for(const {cr,status} of _courseStatusMap().values()) if(status!=='failed') t+=cr;
   return t;
 }
-/* credits per component letter.
-   done    = placed (graded or not) — for planner progress bars
-   passed  = graded with a passing grade — for graduation eligibility
+/* total PASSED credits — graduation eligibility; deduplicates retakes so a
+   failed-then-passed course counts once (3 cr), not twice (6 cr) */
+function passedCredits(){
+  let t=0;
+  for(const {cr,status} of _courseStatusMap().values()) if(status==='passed') t+=cr;
+  return t;
+}
+/* credits per component letter (deduplicates retakes).
+   done    = passed + in-progress (no failed-only, no double-count)
+   passed  = graded non-failing — used for graduation eligibility
    planned = placed but no grade yet */
 function componentTotals(){
   const p=PROGRAMS[state.programId];
   const byCat={};
   p.components.forEach(comp=>byCat[comp.l]={req:comp.req,done:0,passed:0,planned:0,en:comp.en,ms:comp.ms,l:comp.l});
-  Object.values(state.plan).forEach(a=>a.forEach(it=>{
-    const c=getCourse(it.code); if(!c) return;
-    if(!byCat[c.cat]) return;
-    byCat[c.cat].done+=c.cr;
-    if(it.grade && !FAIL_GRADES.has(it.grade)) byCat[c.cat].passed+=c.cr;
-    else byCat[c.cat].planned+=c.cr;
-  }));
+  for(const [code,{cr,status}] of _courseStatusMap()){
+    const c=getCourse(code); if(!c||!byCat[c.cat]) continue;
+    if(status!=='failed'){
+      byCat[c.cat].done+=cr;
+      if(status==='passed') byCat[c.cat].passed+=cr;
+      else byCat[c.cat].planned+=cr;
+    }
+  }
   return byCat;
 }
 
@@ -369,8 +380,38 @@ function substitutePathCourses(){
     return;
   }
   if(pid==="L3"){
+    /* Path 3 = MPB3013 + one ESP elective (6cr). Recommended plan is Path 2
+       (MPB2013 + MPB3013), so remove MPB2013 and insert a default ESP AFTER
+       MPB3013 (ESP courses require MPB3013 as a prereq). */
+    const p=PROGRAMS[state.programId];
     const s2=semOf("MPB2013");
     if(s2>0) state.plan[s2]=(state.plan[s2]||[]).filter(it=>it.code!=="MPB2013");
+    const hasESP=Object.values(state.plan).some(arr=>(arr||[]).some(it=>{
+      const c=getCourse(it.code); return c && c.pathway==="ESP";
+    }));
+    if(!hasESP){
+      const esp=p.courses.find(c=>c.pathway==="ESP");
+      const s3=semOf("MPB3013");
+      if(esp && s3>0){
+        let placed=false;
+        for(let sC=s3+1;sC<=lastRealSem();sC++){
+          if(semCr(sC)+esp.cr<=20){
+            state.plan[sC]=(state.plan[sC]||[]);
+            state.plan[sC].push({code:esp.code,grade:""});
+            placed=true; break;
+          }
+        }
+        if(!placed){
+          /* no room after MPB3013 — use the lightest real semester after it,
+             falling back to MPB3013's own semester if none exists */
+          let minS=-1,minC=999;
+          for(let ss=s3+1;ss<=lastRealSem();ss++){const cr=semCr(ss);if(cr<minC){minC=cr;minS=ss;}}
+          if(minS<1) minS=s3;
+          state.plan[minS]=(state.plan[minS]||[]);
+          state.plan[minS].push({code:esp.code,grade:""});
+        }
+      }
+    }
     return;
   }
   if(pid==="EX"){

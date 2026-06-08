@@ -223,14 +223,16 @@ function renderClassification(){
     else if(cgpa>=DEANS_LIST) sd.textContent="You are on track for First Class Honours. Keep this trajectory to the finish line.";
     else sd.textContent="A steady, considered trajectory. Keep building credits with strong grades to climb the next tier.";
   }
-  let gradedCr=0, graded=0;
-  for(const arr of Object.values(state.plan)) for(const it of arr){
-    const c=getCourse(it.code); if(!c) continue;
-    if(it.grade && gp(it.grade)!==null){ gradedCr+=c.cr; graded++; }
-  }
-  animateNumber($("statCredits"), plannedCredits(), 0, 600);
+  /* count graded courses (any grade, including failed — for the "papers attempted" view)
+     but deduplicated so a retake only counts as one course entry */
+  const smap=_courseStatusMap();
+  let graded=0;
+  for(const {status} of smap.values()) if(status!=='planned') graded++;
+  const earned=passedCredits();
+  const inProgress=plannedCredits()-earned; // placed but no grade yet (deduped, no failed)
+  animateNumber($("statCredits"), earned, 0, 600);
   animateNumber($("statGraded"), graded, 0, 600);
-  animateNumber($("statGradedCr"), gradedCr, 0, 600);
+  animateNumber($("statGradedCr"), inProgress, 0, 600);
 }
 
 /* ─────────────────────── DEGREE PROGRESS (components) ─────────────────────── */
@@ -238,25 +240,32 @@ function renderDegreeProgress(){
   const cont=$("degreeProgress");
   const p=PROGRAMS[state.programId];
   const byCat=componentTotals();
-  const total=plannedCredits(), target=p.total;
-  const pct=Math.min(100, Math.round((total/target)*100));
+  const earned=passedCredits(), inProg=plannedCredits()-earned, target=p.total;
+  const pct=Math.min(100, Math.round((earned/target)*100));
   const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
-  set("overallCredits", `${total} / ${target} CREDITS`);
+  set("overallCredits", `${earned} / ${target} CREDITS`);
   set("overallPct", `${pct}% COMPLETE`);
   const ob=$("overallBar"); if(ob) ob.style.width=pct+"%";
+  const noteEl=$("overallNote");
+  if(noteEl) noteEl.textContent=inProg>0?`+${inProg} cr in progress (not yet graded)`:`Based on graded results only`;
   if(!cont) return;
   cont.innerHTML="";
   Object.values(byCat).forEach(info=>{
-    const cpct=Math.min(100,(info.done/info.req)*100);
-    const done=info.done>=info.req;
+    const passPct=Math.min(100,(info.passed/info.req)*100);
+    const planPct=Math.min(100-passPct,(info.planned/info.req)*100);
+    const done=info.passed>=info.req;
+    const inProgLabel=info.planned>0?` <span class="pr-inprog">+${info.planned} pending</span>`:"";
     const row=document.createElement("div");
     row.className="progress-row"+(done?" is-done":"");
     row.innerHTML=`
       <div class="progress-row-head">
         <span class="pr-label">${info.l}. ${info.en}</span>
-        <span class="pr-val">${info.done} / ${info.req}</span>
+        <span class="pr-val">${info.passed} / ${info.req}${inProgLabel}</span>
       </div>
-      <div class="progress-track"><div class="progress-fill" style="width:${cpct}%"></div></div>`;
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${passPct}%"></div>
+        <div class="progress-fill is-planned" style="position:absolute;left:${passPct}%;width:${planPct}%"></div>
+      </div>`;
     cont.appendChild(row);
   });
 }
